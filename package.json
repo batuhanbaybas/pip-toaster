@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/batuhanbaybas/charecter-notification/issues"
   },
-  "homepage": "https://github.com/batuhanbaybas/charecter-notification#readme",
+  "homepage": "https://batuhanbaybas.github.io/charecter-notification/",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

@@ -28,7 +28,7 @@ body {
 .app {
   display: grid;
   grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
-  height: 100%;
+  height: calc(100% - var(--nav-h, 56px));
   min-height: 0;
   overflow: hidden;
 }

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground — pip-toaster</title>
+    <meta
+      name="description"
+      content="Compose a toast and watch Pip carry it to the dock."
+    />
+    <meta name="theme-color" content="#12141c" />
+    <link rel="icon" href="./demo/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./demo/site.css" />
+    <link rel="stylesheet" href="./demo/demo.css" />
+  </head>
+  <body class="playground">
+    <header class="nav">
+      <a class="nav__brand" href="./">
+        <img src="./demo/favicon.svg" alt="" width="28" height="28" />
+        pip-toaster
+      </a>
+      <nav class="nav__links" aria-label="Site">
+        <a href="./#install">Install</a>
+        <a href="./#api">API</a>
+        <a class="is-active" href="./playground.html">Playground</a>
+        <a
+          class="nav__cta"
+          href="https://github.com/batuhanbaybas/charecter-notification"
+          >GitHub</a
+        >
+      </nav>
+    </header>
+
+    <div class="app">
+      <aside class="composer" aria-label="Bildirim oluştur">
+        <p class="composer__kicker">npm · pip-toaster</p>
+        <h1 class="composer__title">Karakter bildirimi getirir.</h1>
+        <p class="composer__lead">
+          Bildirim bir toaster gibi seçtiğin köşede durur. Pip oraya göre
+          gelir, ağırlığına göre sürükler; kapanırken de geri gelip götürür.
+        </p>
+
+        <label class="field">
+          <span>Başlık</span>
+          <input
+            id="title-input"
+            type="text"
+            maxlength="80"
+            placeholder="örn. Yeni mesaj"
+            value="Toplantı hatırlatması"
+          />
+        </label>
+
+        <label class="field">
+          <span>Mesaj</span>
+          <textarea id="body-input" rows="5" placeholder="Bildirim metnini yaz…">Tasarım incelemesi 10 dakika içinde başlıyor.</textarea>
+        </label>
+
+        <p class="effort-preview" id="effort-preview" aria-live="polite"></p>
+
+        <div class="field">
+          <span>Konum</span>
+          <div class="placement" role="group" aria-label="Toaster konumu">
+            <button type="button" class="placement__cell" data-position="top-left" aria-label="Sol üst"></button>
+            <button type="button" class="placement__cell" data-position="top-center" aria-label="Orta üst"></button>
+            <button type="button" class="placement__cell" data-position="top-right" aria-label="Sağ üst"></button>
+            <button type="button" class="placement__cell" data-position="bottom-left" aria-label="Sol alt"></button>
+            <button type="button" class="placement__cell" data-position="bottom-center" aria-label="Orta alt"></button>
+            <button type="button" class="placement__cell is-active" data-position="bottom-right" aria-label="Sağ alt"></button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span>Durum</span>
+          <div class="statuses" role="group" aria-label="Bildirim durumu">
+            <button type="button" class="preset is-active" data-status="default">Normal</button>
+            <button type="button" class="preset" data-status="info">Bilgi</button>
+            <button type="button" class="preset" data-status="success">Başarı</button>
+            <button type="button" class="preset" data-status="warning">Uyarı</button>
+            <button type="button" class="preset" data-status="error">Hata</button>
+          </div>
+        </div>
+
+        <label class="field">
+          <span>Otomatik kapanış (sn)</span>
+          <input id="duration-input" type="number" min="0" max="30" step="1" value="5" />
+        </label>
+        <p class="field-hint">0 yazarsan Pip yanında bekler, kitap okur. × deyince kitabı kapatıp kartı götürür.</p>
+
+        <label class="check">
+          <input id="action-toggle" type="checkbox" />
+          <span>Aksiyon butonları ekle</span>
+        </label>
+
+        <div class="field">
+          <span>Kart rengi</span>
+          <div class="swatches">
+            <label class="swatch">
+              <input id="card-bg" type="color" value="#f7f1e6" />
+              Zemin
+            </label>
+            <label class="swatch">
+              <input id="card-color" type="color" value="#2c241c" />
+              Yazı
+            </label>
+            <label class="swatch">
+              <input id="card-accent" type="color" value="#e07a5f" />
+              Vurgu
+            </label>
+          </div>
+        </div>
+
+        <div class="presets" role="group" aria-label="Hazır uzunluklar">
+          <button type="button" class="preset" data-preset="light">Kısa</button>
+          <button type="button" class="preset" data-preset="normal">Orta</button>
+          <button type="button" class="preset" data-preset="heavy">Uzun</button>
+          <button type="button" class="preset" data-preset="massive">
+            Devasa
+          </button>
+        </div>
+
+        <button type="button" class="send" id="send-btn">
+          Pip’i gönder
+        </button>
+      </aside>
+
+      <main class="stage" id="stage">
+        <div class="stage__glow" aria-hidden="true"></div>
+      </main>
+    </div>
+
+    <script type="module" src="./demo/demo.js"></script>
+  </body>
+</html>

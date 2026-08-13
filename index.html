@@ -1,116 +1,437 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pip — Karakter Bildirim</title>
+    <title>pip-toaster — toast notifications delivered by Pip</title>
+    <meta
+      name="description"
+      content="Toast notifications delivered by a small character. Pip pulls the card in, parks it in a toaster dock, then pushes it out when it dismisses."
+    />
+    <meta name="theme-color" content="#12141c" />
+    <meta property="og:title" content="pip-toaster" />
+    <meta
+      property="og:description"
+      content="Toast notifications delivered by a character who pulls them in and pushes them out."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="./demo/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Outfit:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./demo/demo.css" />
+    <link rel="stylesheet" href="./demo/site.css" />
   </head>
-  <body>
-    <div class="app">
-      <aside class="composer" aria-label="Bildirim oluştur">
-        <p class="composer__kicker">npm · pip-toast</p>
-        <h1 class="composer__title">Karakter bildirimi getirir.</h1>
-        <p class="composer__lead">
-          Bildirim bir toaster gibi seçtiğin köşede durur. Pip oraya göre
-          gelir, ağırlığına göre sürükler; kapanırken de geri gelip götürür.
+  <body class="docs">
+    <header class="nav">
+      <a class="nav__brand" href="./">
+        <img src="./demo/favicon.svg" alt="" width="28" height="28" />
+        pip-toaster
+      </a>
+      <nav class="nav__links" aria-label="Site">
+        <a href="#install">Install</a>
+        <a href="#api">API</a>
+        <a href="./playground.html">Playground</a>
+        <a
+          class="nav__cta"
+          href="https://github.com/batuhanbaybas/charecter-notification"
+          >GitHub</a
+        >
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="wrap">
+        <p class="hero__kicker">npm · no framework · shadow DOM</p>
+        <h1>Toast notifications, delivered by Pip.</h1>
+        <p class="hero__lead">
+          Pip pulls the card in from the nearest edge, parks it in a toaster
+          dock, then comes back and pushes it out when it dismisses. Weight
+          comes from content length — short copy is a sprint, a wall of text is
+          a struggle.
         </p>
-
-        <label class="field">
-          <span>Başlık</span>
-          <input
-            id="title-input"
-            type="text"
-            maxlength="80"
-            placeholder="örn. Yeni mesaj"
-            value="Toplantı hatırlatması"
-          />
-        </label>
-
-        <label class="field">
-          <span>Mesaj</span>
-          <textarea id="body-input" rows="5" placeholder="Bildirim metnini yaz…">Tasarım incelemesi 10 dakika içinde başlıyor.</textarea>
-        </label>
-
-        <p class="effort-preview" id="effort-preview" aria-live="polite"></p>
-
-        <div class="field">
-          <span>Konum</span>
-          <div class="placement" role="group" aria-label="Toaster konumu">
-            <button type="button" class="placement__cell" data-position="top-left" aria-label="Sol üst"></button>
-            <button type="button" class="placement__cell" data-position="top-center" aria-label="Orta üst"></button>
-            <button type="button" class="placement__cell" data-position="top-right" aria-label="Sağ üst"></button>
-            <button type="button" class="placement__cell" data-position="bottom-left" aria-label="Sol alt"></button>
-            <button type="button" class="placement__cell" data-position="bottom-center" aria-label="Orta alt"></button>
-            <button type="button" class="placement__cell is-active" data-position="bottom-right" aria-label="Sağ alt"></button>
-          </div>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="./playground.html">Open playground</a>
+          <a class="btn btn--ghost" href="#install">Install</a>
         </div>
-
-        <div class="field">
-          <span>Durum</span>
-          <div class="statuses" role="group" aria-label="Bildirim durumu">
-            <button type="button" class="preset is-active" data-status="default">Normal</button>
-            <button type="button" class="preset" data-status="info">Bilgi</button>
-            <button type="button" class="preset" data-status="success">Başarı</button>
-            <button type="button" class="preset" data-status="warning">Uyarı</button>
-            <button type="button" class="preset" data-status="error">Hata</button>
-          </div>
+        <div class="install-chip">
+          <span>npm install pip-toaster</span>
+          <button type="button" data-copy="npm install pip-toaster">Copy</button>
         </div>
+      </div>
+    </section>
 
-        <label class="field">
-          <span>Otomatik kapanış (sn)</span>
-          <input id="duration-input" type="number" min="0" max="30" step="1" value="5" />
-        </label>
-        <p class="field-hint">0 yazarsan Pip yanında bekler, kitap okur. × deyince kitabı kapatıp kartı götürür.</p>
-
-        <label class="check">
-          <input id="action-toggle" type="checkbox" />
-          <span>Aksiyon butonları ekle</span>
-        </label>
-
-        <div class="field">
-          <span>Kart rengi</span>
-          <div class="swatches">
-            <label class="swatch">
-              <input id="card-bg" type="color" value="#f7f1e6" />
-              Zemin
-            </label>
-            <label class="swatch">
-              <input id="card-color" type="color" value="#2c241c" />
-              Yazı
-            </label>
-            <label class="swatch">
-              <input id="card-accent" type="color" value="#e07a5f" />
-              Vurgu
-            </label>
-          </div>
-        </div>
-
-        <div class="presets" role="group" aria-label="Hazır uzunluklar">
-          <button type="button" class="preset" data-preset="light">Kısa</button>
-          <button type="button" class="preset" data-preset="normal">Orta</button>
-          <button type="button" class="preset" data-preset="heavy">Uzun</button>
-          <button type="button" class="preset" data-preset="massive">
-            Devasa
-          </button>
-        </div>
-
-        <button type="button" class="send" id="send-btn">
-          Pip’i gönder
-        </button>
-      </aside>
-
-      <main class="stage" id="stage">
-        <div class="stage__glow" aria-hidden="true"></div>
-      </main>
+    <div class="wrap">
+      <div class="features">
+        <article class="feature">
+          <h2>Edge in, edge out</h2>
+          <p>
+            Six docks. Left and right, Pip walks beside the card. Top and
+            bottom center, Pip flanks it so the character stays on screen.
+          </p>
+        </article>
+        <article class="feature">
+          <h2>Weight is the copy</h2>
+          <p>
+            Length picks the gait: sprint, walk, lean-and-slip, or two Pips on
+            a vertical toast. You don’t configure the animation — the text does.
+          </p>
+        </article>
+        <article class="feature">
+          <h2>Host CSS can’t leak</h2>
+          <p>
+            Styles are injected into a Shadow DOM overlay. No framework, no
+            stylesheet import. Call <code>toast()</code> from anywhere in the
+            browser.
+          </p>
+        </article>
+      </div>
     </div>
 
-    <script type="module" src="./demo/demo.js"></script>
+    <section class="section" id="try">
+      <div class="wrap">
+        <h2>Try it here</h2>
+        <p class="section__lead">
+          These buttons call the real library. Watch Pip enter from the dock
+          you pick below.
+        </p>
+        <div class="try">
+          <button type="button" data-example="short">Short</button>
+          <button type="button" data-example="success">Success</button>
+          <button type="button" data-example="warning">Warning</button>
+          <button type="button" data-example="error">Error + actions</button>
+          <button type="button" data-example="sticky">Sticky (reads)</button>
+          <button type="button" data-example="heavy">Heavy copy</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="install">
+      <div class="wrap grid-2">
+        <div>
+          <h2>Install</h2>
+          <p class="section__lead">
+            ESM + generated <code>.d.ts</code>. Source is TypeScript;
+            <code>tsc</code> is the only build step. Safe on the server:
+            <code>createToaster</code> is a no-op when <code>document</code> is
+            missing.
+          </p>
+          <pre class="code"><span class="cmt"># npm</span>
+npm install pip-toaster
+
+<span class="cmt"># or</span>
+pnpm add pip-toaster</pre>
+        </div>
+        <div>
+          <h2>Usage</h2>
+          <pre class="code"><span class="kw">import</span> { toast } <span class="kw">from</span> <span class="str">"pip-toaster"</span>;
+
+<span class="fn">toast</span>(<span class="str">"Meeting in 10 minutes."</span>);
+
+toast.<span class="fn">success</span>(<span class="str">"Saved."</span>);
+toast.<span class="fn">warning</span>({
+  title: <span class="str">"Queue lag"</span>,
+  message: <span class="str">"Workers are retrying."</span>,
+});</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="api">
+      <div class="wrap">
+        <h2>API</h2>
+        <p class="section__lead">
+          One singleton for most apps. Reach for
+          <code>createToaster</code> when you need a second stack, a custom
+          mount, or different card copy.
+        </p>
+
+        <article class="api-card">
+          <h3><code>toast(input)</code></h3>
+          <p class="sig">toast(input: string | ToastPayload): string</p>
+          <p>
+            Shows a toast and returns its id. A string is treated as
+            <code>message</code>. Empty payloads (no title, message, content, or
+            action) are ignored and return <code>""</code>.
+          </p>
+          <pre class="code">toast({
+  title: <span class="str">"Sprint review"</span>,
+  message: <span class="str">"Bring your notes."</span>,
+  position: <span class="str">"bottom-right"</span>,
+  duration: 5000, <span class="cmt">// ms; 0 = sticky until ×</span>
+});
+
+<span class="kw">const</span> id = toast(<span class="str">"Queued."</span>);
+toast.<span class="fn">dismiss</span>(id);
+toast.<span class="fn">dismissAll</span>();</pre>
+        </article>
+
+        <article class="api-card">
+          <h3><code>ToastPayload</code></h3>
+          <table class="props">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>title</td>
+                <td>string</td>
+                <td>Card heading.</td>
+              </tr>
+              <tr>
+                <td>message</td>
+                <td>string</td>
+                <td>Main copy. <code>body</code> and <code>description</code> are aliases.</td>
+              </tr>
+              <tr>
+                <td>content</td>
+                <td>ToastContent</td>
+                <td>
+                  Extra nodes. Prefer a factory if the node has listeners — the
+                  card is rebuilt for delivery, parking, and dismiss.
+                </td>
+              </tr>
+              <tr>
+                <td>action</td>
+                <td>ToastAction | ToastAction[]</td>
+                <td>
+                  Footer buttons. <code>dismiss</code> defaults to true.
+                  <code>variant</code> is <code>primary</code> or <code>ghost</code>.
+                </td>
+              </tr>
+              <tr>
+                <td>status</td>
+                <td>ToastStatus</td>
+                <td>
+                  <code>default</code> · <code>info</code> · <code>success</code> ·
+                  <code>warning</code> · <code>error</code>. Pip’s shirt and the
+                  card accent follow this.
+                </td>
+              </tr>
+              <tr>
+                <td>position</td>
+                <td>ToastPosition</td>
+                <td>Overrides the toaster default for this toast only.</td>
+              </tr>
+              <tr>
+                <td>duration</td>
+                <td>number</td>
+                <td>Milliseconds. <code>0</code> stays until dismissed — Pip reads beside the card.</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <article class="api-card">
+          <h3>Shortcuts</h3>
+          <p class="sig">
+            toast.info · toast.success · toast.warning · toast.error
+          </p>
+          <p>
+            Same as <code>toast({ …, status })</code>. A string argument becomes
+            the message.
+          </p>
+          <pre class="code">toast.<span class="fn">error</span>({
+  title: <span class="str">"Deploy failed"</span>,
+  message: <span class="str">"The worker ran out of memory."</span>,
+  action: [
+    { label: <span class="str">"Retry"</span>, onClick: () => {} },
+    { label: <span class="str">"Details"</span>, variant: <span class="str">"ghost"</span>, dismiss: <span class="kw">false</span> },
+  ],
+});</pre>
+        </article>
+
+        <article class="api-card">
+          <h3><code>toast.configure(options)</code></h3>
+          <p class="sig">
+            configure(options: { position?, duration?, zIndex?, card? }): void
+          </p>
+          <p>
+            Defaults for the singleton. Call before the first toast, or later
+            to change dock, timing, stacking order, or card colors.
+          </p>
+          <pre class="code">toast.<span class="fn">configure</span>({
+  position: <span class="str">"top-right"</span>,
+  duration: 4000,
+  card: {
+    background: <span class="str">"#111827"</span>,
+    color: <span class="str">"#f9fafb"</span>,
+    accent: <span class="str">"#e07a5f"</span>,
+  },
+});</pre>
+          <p>
+            <code>accent</code> is the default-status highlight.
+            <code>info</code> / <code>success</code> / <code>warning</code> /
+            <code>error</code> keep their own accent. Pip’s shirt still follows
+            <code>status</code>; hat and skin stay as they are.
+          </p>
+        </article>
+
+        <article class="api-card">
+          <h3>Custom content</h3>
+          <p>
+            Unstyled <code>button</code> / <code>a</code> inside
+            <code>content</code> pick up the toast styles. Pass a factory so
+            listeners survive the carry animation.
+          </p>
+          <pre class="code">toast({
+  title: <span class="str">"File deleted"</span>,
+  content: (ctx) => {
+    <span class="kw">const</span> undo = document.createElement(<span class="str">"button"</span>);
+    undo.textContent = <span class="str">"Undo"</span>;
+    undo.addEventListener(<span class="str">"click"</span>, () => ctx.dismiss());
+    <span class="kw">return</span> undo;
+  },
+});</pre>
+        </article>
+
+        <article class="api-card">
+          <h3><code>createToaster(options)</code></h3>
+          <p class="sig">createToaster(options?: ToasterOptions): Toaster</p>
+          <p>
+            Isolated instance. Use it for a second stack, a custom mount node
+            (<code>position: relative</code>), or localized labels. If
+            <code>target</code> is omitted, the overlay is
+            <code>position: fixed</code> on <code>document.body</code>.
+          </p>
+          <pre class="code"><span class="kw">import</span> { createToaster } <span class="kw">from</span> <span class="str">"pip-toaster"</span>;
+
+<span class="kw">const</span> notify = <span class="fn">createToaster</span>({
+  position: <span class="str">"bottom-left"</span>,
+  duration: 5000,
+  target: document.querySelector(<span class="str">"#app"</span>),
+  labels: { kicker: <span class="str">"Bildirim"</span>, close: <span class="str">"Kapat"</span> },
+});
+
+<span class="fn">notify</span>(<span class="str">"Merhaba"</span>);
+notify.<span class="fn">destroy</span>();</pre>
+          <table class="props">
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>Default</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>position</td>
+                <td>bottom-right</td>
+                <td>Default dock for toasts that omit <code>position</code>.</td>
+              </tr>
+              <tr>
+                <td>duration</td>
+                <td>5000</td>
+                <td>Milliseconds. <code>0</code> is sticky.</td>
+              </tr>
+              <tr>
+                <td>zIndex</td>
+                <td>2147483000</td>
+                <td>Overlay stacking.</td>
+              </tr>
+              <tr>
+                <td>target</td>
+                <td>document.body</td>
+                <td>Custom mount. Overlay becomes <code>absolute</code>.</td>
+              </tr>
+              <tr>
+                <td>labels</td>
+                <td>Notice / Dismiss / …</td>
+                <td>
+                  Card kicker and close label. Status-specific kickers:
+                  Info, Success, Warning, Error.
+                </td>
+              </tr>
+              <tr>
+                <td>card</td>
+                <td>—</td>
+                <td><code>background</code>, <code>color</code>, <code>accent</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="positions">
+      <div class="wrap grid-2">
+        <div>
+          <h2>Positions</h2>
+          <p class="section__lead">
+            Click a cell — the next toast (and the live ones on this page) use
+            that dock. Heavy vertical toasts get two Pips.
+          </p>
+          <div class="positions" role="group" aria-label="Toast position">
+            <button type="button" data-position="top-left" aria-label="top-left"></button>
+            <button type="button" data-position="top-center" aria-label="top-center"></button>
+            <button type="button" data-position="top-right" aria-label="top-right"></button>
+            <button type="button" data-position="bottom-left" aria-label="bottom-left"></button>
+            <button type="button" data-position="bottom-center" aria-label="bottom-center"></button>
+            <button type="button" class="is-active" data-position="bottom-right" aria-label="bottom-right"></button>
+          </div>
+        </div>
+        <div>
+          <h2>Status</h2>
+          <p class="section__lead">
+            Shirt color and card accent track status. The kicker label follows
+            it too.
+          </p>
+          <div class="statuses">
+            <span class="pill"><i style="background:#3d7a78"></i> default</span>
+            <span class="pill"><i style="background:#2c6f9a"></i> info</span>
+            <span class="pill"><i style="background:#2d7a4a"></i> success</span>
+            <span class="pill"><i style="background:#c47a1a"></i> warning</span>
+            <span class="pill"><i style="background:#c44536"></i> error</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="effort">
+      <div class="wrap">
+        <h2>Effort</h2>
+        <p class="section__lead">
+          <code>classifyEffort(title, message)</code> maps trimmed character
+          count to a gait. You rarely need this — Pip already uses it.
+        </p>
+        <div class="effort">
+          <div class="effort__item">
+            <strong>light</strong>
+            <span>≤ 42 characters. Sprint. One hand.</span>
+          </div>
+          <div class="effort__item">
+            <strong>normal</strong>
+            <span>≤ 118. Steady walk.</span>
+          </div>
+          <div class="effort__item">
+            <strong>heavy</strong>
+            <span>≤ 260. Lean, slips, both hands. Two Pips on top/bottom.</span>
+          </div>
+          <div class="effort__item">
+            <strong>massive</strong>
+            <span>261+. A real struggle. Exhausted pause before the drop.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>MIT · Batuhan Baybaş</span>
+        <span>
+          <a href="./playground.html">Playground</a>
+          ·
+          <a href="https://github.com/batuhanbaybas/charecter-notification">GitHub</a>
+        </span>
+      </div>
+    </footer>
+
+    <script type="module" src="./demo/docs.js"></script>
   </body>
 </html>

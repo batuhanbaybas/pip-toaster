@@ -1,6 +1,8 @@
-# pip-toast
+# pip-toaster
 
 Toast notifications delivered by a small character. Pip pulls the card in from the nearest edge, parks it in a toaster dock, then comes back and pushes it out when it dismisses.
+
+**[Documentation](https://batuhanbaybas.github.io/charecter-notification/)** · **[Playground](https://batuhanbaybas.github.io/charecter-notification/playground.html)**
 
 Weight comes from content length: short copy is a sprint, a wall of text is a struggle (lean, slips, two Pips on top/bottom).
 
@@ -11,13 +13,13 @@ The published package is compiled ESM plus generated `.d.ts`. Source lives in Ty
 ## Install
 
 ```bash
-npm install pip-toast
+npm install pip-toaster
 ```
 
 ## Usage
 
 ```ts
-import { toast } from "pip-toast";
+import { toast } from "pip-toaster";
 
 toast("Meeting in 10 minutes.");
 
@@ -58,12 +60,14 @@ toast.dismissAll();
 
 `title` and `message` are the card copy (`body` / `description` still work as aliases of `message`). `status` is `default` · `info` · `success` · `warning` · `error` — Pip’s shirt and the card accent follow it (`toast.success()` / `.warning()` / `.error()` / `.info()` are shortcuts). `action` renders footer buttons. `content` is a slot for your own nodes (buttons, links, anything `Node`). Host CSS does not pierce the Shadow DOM — unstyled `button` / `a` inside `content` pick up the toast styles, or pass a factory so listeners survive the carry animation.
 
+Full payload, `createToaster`, labels, and card colors: [API docs](https://batuhanbaybas.github.io/charecter-notification/#api).
+
 ### Isolated instance
 
 Use `createToaster` when you need a second stack, a custom mount node, or different card copy.
 
 ```ts
-import { createToaster } from "pip-toast";
+import { createToaster } from "pip-toaster";
 
 const notify = createToaster({
   position: "bottom-left",
@@ -92,7 +96,7 @@ toast.configure({
 });
 ```
 
-`accent` is the default-status highlight. `info` / `success` / `warning` / `error` keep their own accent. Or set `--toast-bg`, `--toast-color`, `--toast-accent` on `.pip-toast-host`.
+`accent` is the default-status highlight. `info` / `success` / `warning` / `error` keep their own accent. Or set `--toast-bg`, `--toast-color`, `--toast-accent` on `.pip-toaster-host`.
 
 ## Positions
 
@@ -107,7 +111,15 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:5173. `npm run build` compiles `src/` → `dist/` (the demo imports from there).
+Then open http://localhost:5173 for the docs site and http://localhost:5173/playground.html for the composer.
+
+`npm run build` compiles `src/` → `dist/` (the demo imports from there).
+
+## GitHub Pages
+
+The site deploys from `.github/workflows/pages.yml` on push to `master`.
+
+One-time: **Settings → Pages → Source → GitHub Actions**. After the workflow runs, the site is at `https://batuhanbaybas.github.io/charecter-notification/`.
 
 ## Publish
 
