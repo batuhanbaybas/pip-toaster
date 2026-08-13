@@ -40,6 +40,59 @@ const toast = createToaster({
 
 let position = "bottom-right";
 
+const skinInput = document.querySelector("#theme-skin");
+const shirtInput = document.querySelector("#theme-shirt");
+const hatInput = document.querySelector("#theme-hat");
+const bootsInput = document.querySelector("#theme-boots");
+const cardInput = document.querySelector("#theme-card");
+const inkInput = document.querySelector("#theme-ink");
+const paddingInput = document.querySelector("#theme-padding");
+const widthInput = document.querySelector("#theme-width");
+const offsetInput = document.querySelector("#theme-offset");
+const paddingLabel = document.querySelector("#padding-label");
+const widthLabel = document.querySelector("#width-label");
+const offsetLabel = document.querySelector("#offset-label");
+
+function syncTheme() {
+  const padding = Number(paddingInput.value);
+  const width = Number(widthInput.value);
+  const offset = Number(offsetInput.value);
+  paddingLabel.textContent = String(padding);
+  widthLabel.textContent = String(width);
+  offsetLabel.textContent = String(offset);
+
+  toast.configure({
+    theme: {
+      pipSkin: skinInput.value,
+      pipShirt: shirtInput.value,
+      pipHat: hatInput.value,
+      pipBoots: bootsInput.value,
+      accent: hatInput.value,
+      toastBg: cardInput.value,
+      toastColor: inkInput.value,
+      toastPadding: `${padding}px ${padding + 2}px ${padding}px ${padding + 4}px`,
+      toastWidth: `${width}px`,
+      dockOffset: `${offset}px`,
+    },
+  });
+}
+
+for (const el of [
+  skinInput,
+  shirtInput,
+  hatInput,
+  bootsInput,
+  cardInput,
+  inkInput,
+  paddingInput,
+  widthInput,
+  offsetInput,
+]) {
+  el.addEventListener("input", syncTheme);
+}
+
+syncTheme();
+
 function syncPreview() {
   preview.textContent = HINTS[classifyEffort(titleInput.value, bodyInput.value)];
 }

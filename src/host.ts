@@ -1,5 +1,6 @@
 import { createCharacter } from "./character.js";
 import { POSITIONS, type ToastPosition } from "./placement.js";
+import { applyTheme, type ToastTheme } from "./theme.js";
 
 const stylesheetHref = new URL("./styles.css", import.meta.url).href;
 
@@ -8,6 +9,7 @@ export type DockMap = Record<ToastPosition, HTMLElement>;
 export interface MountHostOptions {
   target?: HTMLElement | null;
   zIndex?: number;
+  theme?: ToastTheme;
 }
 
 export interface ToastHost {
@@ -19,6 +21,7 @@ export interface ToastHost {
   docks: DockMap;
   ready: Promise<void>;
   setZIndex(value: number): void;
+  setTheme(theme: ToastTheme): void;
   destroy(): void;
 }
 
@@ -34,7 +37,7 @@ function linkHasSheet(link: HTMLLinkElement): boolean {
  * Overlay on document.body (fixed) or a custom target (absolute).
  * Styles live in Shadow DOM so host-page CSS cannot leak in (or out).
  */
-export function mountHost({ target, zIndex }: MountHostOptions = {}): ToastHost {
+export function mountHost({ target, zIndex, theme }: MountHostOptions = {}): ToastHost {
   const mountAt = target ?? document.body;
   const contained = mountAt !== document.body;
 
@@ -87,6 +90,7 @@ export function mountHost({ target, zIndex }: MountHostOptions = {}): ToastHost 
   root.append(toasterLayer, lane);
   shadow.append(root);
   mountAt.append(host);
+  if (theme) applyTheme(host, theme);
 
   return {
     host,
@@ -98,6 +102,9 @@ export function mountHost({ target, zIndex }: MountHostOptions = {}): ToastHost 
     ready,
     setZIndex(value) {
       host.style.zIndex = String(value);
+    },
+    setTheme(next) {
+      applyTheme(host, next);
     },
     destroy() {
       host.remove();
