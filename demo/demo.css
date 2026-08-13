@@ -59,14 +59,10 @@ body {
 }
 
 .composer__lead {
-  margin: 0 0 12px;
+  margin: 0 0 28px;
   color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.55;
-}
-
-.composer .notice {
-  margin: 0 0 24px;
 }
 
 .field {

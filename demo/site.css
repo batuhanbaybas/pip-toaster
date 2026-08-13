@@ -219,23 +219,6 @@ html:has(.docs) {
   font-weight: 600;
 }
 
-.notice {
-  margin: 0 0 28px;
-  padding: 14px 18px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--accent-2);
-  border-radius: 12px;
-  background: var(--bg-2);
-  color: var(--muted);
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-.notice strong {
-  color: var(--ink);
-  font-weight: 600;
-}
-
 .features {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
