@@ -34,7 +34,6 @@ const durationInput = document.querySelector("#duration-input");
 const actionToggle = document.querySelector("#action-toggle");
 
 const toast = createToaster({
-  target: document.querySelector("#stage"),
   position: "bottom-right",
   labels: {
     kicker: "Bildirim",

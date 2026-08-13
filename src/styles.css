@@ -54,7 +54,7 @@
 .pip-toast {
   position: absolute;
   inset: 0;
-  overflow: clip;
+  overflow: visible;
 }
 
 /* ——— Toaster docks ——— */
@@ -63,7 +63,7 @@
   position: absolute;
   inset: 0;
   z-index: 2;
-  overflow: clip;
+  overflow: visible;
   overflow-anchor: none;
   pointer-events: none;
 }
