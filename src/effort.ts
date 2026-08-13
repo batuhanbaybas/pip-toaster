@@ -4,28 +4,48 @@
  * not in animation code.
  */
 
-export const EFFORT = Object.freeze({
+export const EFFORT = {
   LIGHT: "light",
   NORMAL: "normal",
   HEAVY: "heavy",
   MASSIVE: "massive",
-});
+} as const;
 
-const THRESHOLDS = [
+export type EffortId = (typeof EFFORT)[keyof typeof EFFORT];
+
+export type CurveEase = "easeOut" | "easeInOut" | "linear";
+
+export interface CurvePoint {
+  t: number;
+  v: number;
+}
+
+export interface EffortProfile {
+  id: EffortId;
+  label: string;
+  duration: number;
+  enterMs: number;
+  grabMs: number;
+  releaseMs: number;
+  exhaustedMs: number;
+  exitMs: number;
+  leanMax: number;
+  walkMs: number;
+  bothHands: boolean;
+  curve: readonly CurvePoint[];
+  ease: CurveEase;
+}
+
+const THRESHOLDS: readonly { max: number; id: EffortId }[] = [
   { max: 42, id: EFFORT.LIGHT },
   { max: 118, id: EFFORT.NORMAL },
   { max: 260, id: EFFORT.HEAVY },
 ];
 
-/**
- * Pull progress over time. v can go backwards — that's a slip.
- * Character strain / walk / slip is derived from the derivative of this curve.
- */
-const PROFILES = {
+const PROFILES: Record<EffortId, EffortProfile> = {
   [EFFORT.LIGHT]: {
     id: EFFORT.LIGHT,
-    label: "tüy gibi",
-    hint: "Pip bunu koşarak getirir.",
+    label: "light",
     duration: 780,
     enterMs: 420,
     grabMs: 240,
@@ -43,8 +63,7 @@ const PROFILES = {
   },
   [EFFORT.NORMAL]: {
     id: EFFORT.NORMAL,
-    label: "idare eder",
-    hint: "Pip rahatça sürükler.",
+    label: "normal",
     duration: 1280,
     enterMs: 480,
     grabMs: 300,
@@ -63,8 +82,7 @@ const PROFILES = {
   },
   [EFFORT.HEAVY]: {
     id: EFFORT.HEAVY,
-    label: "ağır",
-    hint: "Pip eğilecek. Birkaç hamlede çeker.",
+    label: "heavy",
     duration: 2400,
     enterMs: 520,
     grabMs: 380,
@@ -88,8 +106,7 @@ const PROFILES = {
   },
   [EFFORT.MASSIVE]: {
     id: EFFORT.MASSIVE,
-    label: "devasa",
-    hint: "Bu epey ağır. Pip zorlanacak.",
+    label: "massive",
     duration: 3900,
     enterMs: 560,
     grabMs: 460,
@@ -116,49 +133,49 @@ const PROFILES = {
   },
 };
 
-export function contentLength(title = "", body = "") {
+export function contentLength(title = "", body = ""): number {
   return `${title} ${body}`.replace(/\s+/g, " ").trim().length;
 }
 
-export function classifyEffort(title, body) {
+export function classifyEffort(title = "", body = ""): EffortId {
   const len = contentLength(title, body);
   const match = THRESHOLDS.find((t) => len <= t.max);
-  return match ? match.id : EFFORT.MASSIVE;
+  return match?.id ?? EFFORT.MASSIVE;
 }
 
-export function getProfile(title, body) {
-  return PROFILES[classifyEffort(title, body)];
+export function getProfile(title = "", body = ""): EffortProfile {
+  return getProfileById(classifyEffort(title, body));
 }
 
-export function getProfileById(id) {
-  return PROFILES[id] ?? PROFILES[EFFORT.NORMAL];
+export function getProfileById(id: EffortId): EffortProfile {
+  const profile = PROFILES[id];
+  if (!profile) throw new Error(`Unknown effort: ${id}`);
+  return profile;
 }
 
-function easeOutCubic(t) {
+function easeOutCubic(t: number): number {
   return 1 - (1 - t) ** 3;
 }
 
-function easeInOutCubic(t) {
+function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
 }
 
-function applyEase(t, kind) {
+function applyEase(t: number, kind: CurveEase): number {
   if (kind === "easeOut") return easeOutCubic(t);
   if (kind === "easeInOut") return easeInOutCubic(t);
   return t;
 }
 
-/**
- * Sample pull progress in [~0, ~1.1] (overshoot allowed).
- */
-export function sampleCurve(profile, t) {
+export function sampleCurve(profile: EffortProfile, t: number): number {
   const clamped = Math.min(1, Math.max(0, t));
   const { curve, ease } = profile;
   let i = 0;
-  while (i < curve.length - 2 && clamped > curve[i + 1].t) i += 1;
+  while (i < curve.length - 2 && clamped > (curve[i + 1]?.t ?? 1)) i += 1;
 
   const a = curve[i];
   const b = curve[i + 1];
+  if (!a || !b) return 0;
   const span = b.t - a.t || 1;
   const local = applyEase((clamped - a.t) / span, ease);
   return a.v + (b.v - a.v) * local;

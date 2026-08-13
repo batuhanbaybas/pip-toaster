@@ -3,6 +3,8 @@
  * Top/bottom: same flanking carry, sliding on Y — two Pips when huge.
  */
 
+import type { EffortId } from "./effort.js";
+
 export const POSITIONS = [
   "top-left",
   "top-center",
@@ -10,16 +12,52 @@ export const POSITIONS = [
   "bottom-left",
   "bottom-center",
   "bottom-right",
-];
+] as const;
 
-export function parsePosition(value) {
-  return POSITIONS.includes(value) ? value : "bottom-right";
+export type ToastPosition = (typeof POSITIONS)[number];
+
+export type Axis = "x" | "y";
+export type PipSide = "before" | "after";
+export type Edge = "top" | "bottom" | "left" | "right";
+export type Face = "1" | "-1";
+export type Vertical = "top" | "bottom";
+export type Horizontal = "left" | "center" | "right";
+
+export interface Point {
+  x: number;
+  y: number;
 }
 
-export function getPlacement(position) {
+export interface Pose {
+  from: Edge;
+  axis: Axis;
+  pipSide: PipSide;
+  direction: string;
+  face: Face;
+  leanSign: number;
+}
+
+export interface Placement {
+  id: ToastPosition;
+  vertical: Vertical;
+  horizontal: Horizontal;
+  from: Edge;
+  pull: Pose;
+  push: Pose;
+}
+
+export type ActingLayout = Placement & Pose & { mode: "pull" | "push" };
+
+export function parsePosition(value: unknown): ToastPosition {
+  return typeof value === "string" && (POSITIONS as readonly string[]).includes(value)
+    ? (value as ToastPosition)
+    : "bottom-right";
+}
+
+export function getPlacement(position: unknown): Placement {
   const id = parsePosition(position);
-  const [vertical, horizontal] = id.split("-");
-  const edge = horizontal === "center" ? vertical : horizontal;
+  const [vertical, horizontal] = id.split("-") as [Vertical, Horizontal];
+  const edge: Edge = horizontal === "center" ? vertical : horizontal;
   const verticalEnter = horizontal === "center";
 
   return {
@@ -65,18 +103,18 @@ export function getPlacement(position) {
 }
 
 /** Vertical travel still flanks the card so Pip stays on-screen. Huge cards get two Pips. */
-export function crewSize(layout, effortId) {
+export function crewSize(layout: Pick<Pose, "axis">, effortId: EffortId): 1 | 2 {
   if (layout.axis !== "y") return 1;
   return effortId === "heavy" || effortId === "massive" ? 2 : 1;
 }
 
 /** Merge pull or push fields onto the placement for a single acting layout. */
-export function withMode(placement, mode) {
+export function withMode(placement: Placement, mode: "pull" | "push"): ActingLayout {
   const pose = mode === "push" ? placement.push : placement.pull;
   return { ...placement, ...pose, mode };
 }
 
-export function insertSlot(dock, placement, height) {
+export function insertSlot(dock: HTMLElement, placement: Placement, height: number): HTMLElement {
   const spacer = document.createElement("div");
   spacer.className = "note note--spacer";
   spacer.style.height = `${Math.max(72, height)}px`;
@@ -85,7 +123,7 @@ export function insertSlot(dock, placement, height) {
   return spacer;
 }
 
-export function offsetAlong(from, to, distance) {
+export function offsetAlong(from: Point, to: Point, distance: number): Point {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const len = Math.hypot(dx, dy) || 1;
@@ -95,7 +133,7 @@ export function offsetAlong(from, to, distance) {
   };
 }
 
-export function lerpPoint(from, to, t) {
+export function lerpPoint(from: Point, to: Point, t: number): Point {
   return {
     x: from.x + (to.x - from.x) * t,
     y: from.y + (to.y - from.y) * t,
@@ -106,7 +144,19 @@ export function lerpPoint(from, to, t) {
  * Align the CARD to the spacer slot; wrap (pip + card) is offset around it.
  * Off-screen start is along `placement.from`.
  */
-export function measureTravel({ stage, wrap, card, slot, placement }) {
+export function measureTravel({
+  stage,
+  wrap,
+  card,
+  slot,
+  placement,
+}: {
+  stage: HTMLElement;
+  wrap: HTMLElement;
+  card: HTMLElement;
+  slot: HTMLElement;
+  placement: Pick<Pose, "from">;
+}): { start: Point; end: Point } {
   const stageRect = stage.getBoundingClientRect();
   const wrapRect = wrap.getBoundingClientRect();
   const cardRect = card.getBoundingClientRect();

@@ -1,4 +1,4 @@
-import { getProfile, sampleCurve } from "./effort.js";
+import { getProfile, sampleCurve, type EffortId, type EffortProfile } from "./effort.js";
 import {
   crewSize,
   getPlacement,
@@ -8,53 +8,126 @@ import {
   offsetAlong,
   parsePosition,
   withMode,
+  type ActingLayout,
+  type Placement,
+  type Point,
+  type ToastPosition,
 } from "./placement.js";
+import type { DockMap } from "./host.js";
+import type { ToasterLabels } from "./types.js";
 
-const PRESETS = {
-  light: {
-    title: "Yeni mesaj",
-    body: "Toplantı 10 dk içinde.",
-  },
-  normal: {
-    title: "Tasarım incelemesi",
-    body: "Tasarım incelemesi 10 dakika içinde başlıyor. Odada hazır ol, notlarını yanına al.",
-  },
-  heavy: {
-    title: "Sprint özeti gecikti",
-    body: "Sprint review notları hâlâ eksik: API sözleşmesi, hata bütçesi ve bildirim kuyruğunun geri basma davranışı yazılmadı. Lütfen toplantıdan önce bu üç maddeyi tamamla, aksi halde demo kayar ve paydaşlara yeni bir slot açmak zorunda kalırız.",
-  },
-  massive: {
-    title: "Üretim alarmı — okumadan geçme",
-    body: "Kuyruk derinliği son 12 dakikada 4 katına çıktı. Worker’lar mesajı alıyor ama işledikten sonra ack atamıyor; retry fırtınası bildirim servisini şişiriyor. Kısa mesajlar hâlâ geçiyor, uzun gövdeli payload’lar ise worker’ı 2–3 saniye meşgul ediyor. Öncelik: tüketici timeout’unu düşür, poison mesajı ayrı kuyruğa al, ardından uzun bildirimleri parçala. Bu metin kasıtlı olarak uzun — Pip’in gerçekten ağır bir şeyi sürüklemesini izlemek için.",
-  },
+const DEFAULT_LABELS = {
+  kicker: "Notice",
+  close: "Dismiss",
+} as const;
+
+type ResolvedLabels = {
+  kicker: string;
+  close: string;
 };
 
-function wait(ms) {
+type CharacterState =
+  | "hidden"
+  | "enter"
+  | "grab"
+  | "pull"
+  | "push"
+  | "strain"
+  | "slip"
+  | "release"
+  | "exhausted"
+  | "exit";
+
+interface DeliverJob {
+  kind: "deliver";
+  id: string;
+  title: string;
+  body: string;
+  position: ToastPosition;
+  durationMs: number;
+}
+
+interface DismissJob {
+  kind: "dismiss";
+  id: string;
+}
+
+type Job = DeliverJob | DismissJob;
+
+interface ParkedToast {
+  id: string;
+  title: string;
+  body: string;
+  profile: EffortProfile;
+  placement: Placement;
+  el: HTMLElement;
+  durationMs: number;
+  timer: number;
+  closing: boolean;
+}
+
+export interface SceneOptions {
+  character: HTMLElement;
+  lane: HTMLElement;
+  stage: HTMLElement;
+  docks: DockMap;
+  labels?: ToasterLabels;
+  ready?: Promise<void>;
+}
+
+export interface EnqueueInput {
+  title: string;
+  body: string;
+  position: ToastPosition;
+  durationMs: number;
+}
+
+export interface Scene {
+  enqueue(input: EnqueueInput): string;
+  dismiss(id: string): void;
+  dismissAll(): void;
+}
+
+function wait(ms: number): Promise<void> {
   return new Promise((resolve) => {
     window.setTimeout(resolve, ms);
   });
 }
 
-function prefersReducedMotion() {
+function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function easeOutCubic(t) {
+function easeOutCubic(t: number): number {
   return 1 - (1 - t) ** 3;
 }
 
-function setWrapPos(el, point) {
+function setWrapPos(el: HTMLElement, point: Point): void {
   el.style.transform = `translate(${point.x}px, ${point.y}px)`;
 }
 
-function effortLabel(id) {
-  if (id === "light") return "tüy";
-  if (id === "heavy") return "ağır";
-  if (id === "massive") return "devasa";
+function effortLabel(id: EffortId): string {
+  if (id === "light") return "light";
+  if (id === "heavy") return "heavy";
+  if (id === "massive") return "massive";
   return "normal";
 }
 
-function buildCard({ title, body, effort, closable, id }) {
+function buildCard({
+  title,
+  body,
+  effort,
+  closable,
+  id,
+  labels,
+}: {
+  title: string;
+  body: string;
+  effort: EffortId;
+  closable: boolean;
+  id?: string;
+  labels: ResolvedLabels;
+}): HTMLElement {
   const article = document.createElement("article");
   article.className = closable ? "note" : "delivery__card";
   article.dataset.effort = effort;
@@ -64,7 +137,7 @@ function buildCard({ title, body, effort, closable, id }) {
   kicker.className = "note__kicker";
 
   const kind = document.createElement("span");
-  kind.textContent = "Bildirim";
+  kind.textContent = labels.kicker;
   const weight = document.createElement("span");
   weight.className = "note__weight";
   weight.textContent = effortLabel(effort);
@@ -72,7 +145,7 @@ function buildCard({ title, body, effort, closable, id }) {
 
   const heading = document.createElement("h2");
   heading.className = "note__title";
-  heading.textContent = title || "Bildirim";
+  heading.textContent = title || labels.kicker;
 
   const text = document.createElement("p");
   text.className = "note__body";
@@ -84,7 +157,7 @@ function buildCard({ title, body, effort, closable, id }) {
     const close = document.createElement("button");
     close.type = "button";
     close.className = "note__close";
-    close.setAttribute("aria-label", "Kapat");
+    close.setAttribute("aria-label", labels.close);
     close.textContent = "×";
     article.append(close);
   }
@@ -92,21 +165,35 @@ function buildCard({ title, body, effort, closable, id }) {
   return article;
 }
 
-export function createScene({ character, lane, stage, docks }) {
-  const jobs = [];
-  const toasts = new Map();
+export function createScene({
+  character,
+  lane,
+  stage,
+  docks,
+  labels,
+  ready,
+}: SceneOptions): Scene {
+  const copy: ResolvedLabels = { ...DEFAULT_LABELS, ...labels };
+  const jobs: Job[] = [];
+  const toasts = new Map<string, ParkedToast>();
   let busy = false;
   let seq = 0;
+  let dismissInFlight = false;
 
-  let activeWrap = null;
+  let activeWrap: HTMLElement | null = null;
 
-  function crewOf(wrap) {
+  function crewOf(wrap: HTMLElement | null): HTMLElement[] {
     if (!wrap) return [character];
-    const pips = [...wrap.querySelectorAll(".character")];
+    const pips = [...wrap.querySelectorAll<HTMLElement>(".character")];
     return pips.length > 0 ? pips : [character];
   }
 
-  function setCharacterState(state, effort, profile, layout) {
+  function setCharacterState(
+    state: CharacterState,
+    effort: EffortId,
+    profile: EffortProfile | undefined,
+    layout: ActingLayout | undefined,
+  ): void {
     const crew = crewOf(activeWrap);
     const dual = crew.length > 1;
     crew.forEach((pip, index) => {
@@ -132,13 +219,13 @@ export function createScene({ character, lane, stage, docks }) {
     });
   }
 
-  function hideCharacter() {
+  function hideCharacter(): void {
     character.dataset.state = "hidden";
     character.dataset.push = "";
     character.style.removeProperty("--lean");
   }
 
-  function mountWrap(layout, card, profile) {
+  function mountWrap(layout: ActingLayout, card: HTMLElement, profile: EffortProfile): HTMLElement {
     const wrap = document.createElement("div");
     const crew = crewSize(layout, profile.id);
     wrap.className = "delivery";
@@ -151,7 +238,7 @@ export function createScene({ character, lane, stage, docks }) {
     wrap.style.visibility = "hidden";
 
     if (crew === 2) {
-      const mate = character.cloneNode(true);
+      const mate = character.cloneNode(true) as HTMLElement;
       mate.removeAttribute("id");
       mate.dataset.role = "mate";
       wrap.append(character, card, mate);
@@ -166,19 +253,35 @@ export function createScene({ character, lane, stage, docks }) {
     return wrap;
   }
 
-  function revealWrap(wrap, point) {
+  function revealWrap(wrap: HTMLElement, point: Point): void {
     setWrapPos(wrap, point);
     wrap.style.visibility = "";
   }
 
-  function parkCharacter() {
+  function parkCharacter(): void {
     lane.querySelectorAll('.character[data-role="mate"]').forEach((el) => el.remove());
     lane.append(character);
     hideCharacter();
     activeWrap = null;
   }
 
-  async function playPull({ wrap, from, to, profile, placement, stateWhenMoving, leanSign }) {
+  async function playPull({
+    wrap,
+    from,
+    to,
+    profile,
+    placement,
+    stateWhenMoving,
+    leanSign,
+  }: {
+    wrap: HTMLElement;
+    from: Point;
+    to: Point;
+    profile: EffortProfile;
+    placement: ActingLayout;
+    stateWhenMoving: CharacterState;
+    leanSign?: number;
+  }): Promise<void> {
     const sign = leanSign ?? placement.leanSign;
 
     await animatePull({
@@ -219,7 +322,7 @@ export function createScene({ character, lane, stage, docks }) {
     });
   }
 
-  async function playDelivery(job) {
+  async function playDelivery(job: DeliverJob): Promise<void> {
     const placement = getPlacement(job.position);
     const profile = getProfile(job.title, job.body);
     const dock = docks[placement.id];
@@ -231,6 +334,7 @@ export function createScene({ character, lane, stage, docks }) {
       body: job.body,
       effort: profile.id,
       closable: false,
+      labels: copy,
     });
 
     const layout = withMode(placement, "pull");
@@ -241,7 +345,7 @@ export function createScene({ character, lane, stage, docks }) {
 
     if (reduced) {
       revealWrap(wrap, travel.end);
-      settleToast(job, wrap, card, spacer, profile, placement);
+      settleToast(job, wrap, spacer, profile, placement);
       return;
     }
 
@@ -271,23 +375,30 @@ export function createScene({ character, lane, stage, docks }) {
     setCharacterState("exit", profile.id, profile, layout);
     await wait(profile.exitMs);
 
-    settleToast(job, wrap, card, spacer, profile, placement);
+    settleToast(job, wrap, spacer, profile, placement);
   }
 
-  function settleToast(job, wrap, card, spacer, profile, placement) {
+  function settleToast(
+    job: DeliverJob,
+    wrap: HTMLElement,
+    spacer: HTMLElement,
+    profile: EffortProfile,
+    placement: Placement,
+  ): void {
     const parked = buildCard({
       id: job.id,
       title: job.title,
       body: job.body,
       effort: profile.id,
       closable: true,
+      labels: copy,
     });
 
     spacer.replaceWith(parked);
     wrap.remove();
     parkCharacter();
 
-    const toast = {
+    const toast: ParkedToast = {
       id: job.id,
       title: job.title,
       body: job.body,
@@ -300,6 +411,11 @@ export function createScene({ character, lane, stage, docks }) {
     };
     toasts.set(job.id, toast);
 
+    if (dismissInFlight) {
+      requestDismiss(job.id);
+      return;
+    }
+
     if (toast.durationMs > 0) {
       toast.timer = window.setTimeout(() => {
         requestDismiss(job.id);
@@ -307,7 +423,7 @@ export function createScene({ character, lane, stage, docks }) {
     }
   }
 
-  async function playDismiss(job) {
+  async function playDismiss(job: DismissJob): Promise<void> {
     const toast = toasts.get(job.id);
     if (!toast?.el) {
       toasts.delete(job.id);
@@ -331,6 +447,7 @@ export function createScene({ character, lane, stage, docks }) {
       body: toast.body,
       effort: profile.id,
       closable: false,
+      labels: copy,
     });
     const layout = withMode(placement, "push");
     const wrap = mountWrap(layout, card, profile);
@@ -370,21 +487,24 @@ export function createScene({ character, lane, stage, docks }) {
     toasts.delete(job.id);
   }
 
-  async function drain() {
+  async function drain(): Promise<void> {
     busy = true;
+    if (ready) await ready;
     while (jobs.length > 0) {
       const next = jobs.shift();
+      if (!next) break;
       if (next.kind === "deliver") await playDelivery(next);
       else await playDismiss(next);
     }
     busy = false;
+    if (toasts.size === 0) dismissInFlight = false;
   }
 
-  function pump() {
-    if (!busy) drain();
+  function pump(): void {
+    if (!busy) void drain();
   }
 
-  function requestDismiss(id) {
+  function requestDismiss(id: string): void {
     const toast = toasts.get(id);
     if (!toast || toast.closing) return;
     toast.closing = true;
@@ -394,37 +514,49 @@ export function createScene({ character, lane, stage, docks }) {
   }
 
   stage.addEventListener("click", (event) => {
-    const close = event.target.closest(".note__close");
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const close = target.closest(".note__close");
     if (!close) return;
     const note = close.closest(".note");
-    if (note?.dataset.id) requestDismiss(note.dataset.id);
+    if (note instanceof HTMLElement && note.dataset.id) requestDismiss(note.dataset.id);
   });
 
   return {
     enqueue({ title, body, position, durationMs }) {
+      dismissInFlight = false;
+      const id = `toast-${++seq}`;
       jobs.push({
         kind: "deliver",
-        id: `toast-${++seq}`,
+        id,
         title: title.trim(),
         body: body.trim(),
         position: parsePosition(position),
         durationMs: Number.isFinite(durationMs) ? Math.max(0, durationMs) : 5000,
       });
       pump();
+      return id;
     },
     dismiss: requestDismiss,
+    dismissAll() {
+      dismissInFlight = true;
+      for (let i = jobs.length - 1; i >= 0; i -= 1) {
+        if (jobs[i]?.kind === "deliver") jobs.splice(i, 1);
+      }
+      for (const id of [...toasts.keys()]) requestDismiss(id);
+    },
   };
 }
 
-function clamp(value, min, max) {
+function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-function animatePos(el, from, to, duration) {
+function animatePos(el: HTMLElement, from: Point, to: Point, duration: number): Promise<void> {
   return new Promise((resolve) => {
     const start = performance.now();
     setWrapPos(el, from);
-    const tick = (now) => {
+    const tick = (now: number) => {
       const t = Math.min(1, (now - start) / duration);
       setWrapPos(el, lerpPoint(from, to, easeOutCubic(t)));
       if (t < 1) requestAnimationFrame(tick);
@@ -434,17 +566,23 @@ function animatePos(el, from, to, duration) {
   });
 }
 
-function pullSlope(profile, t) {
+function pullSlope(profile: EffortProfile, t: number): number {
   const dt = 0.03;
   const a = sampleCurve(profile, Math.max(0, t - dt));
   const b = sampleCurve(profile, Math.min(1, t + dt));
   return (b - a) / (2 * dt);
 }
 
-function animatePull({ duration, onFrame }) {
+function animatePull({
+  duration,
+  onFrame,
+}: {
+  duration: number;
+  onFrame: (t: number) => void;
+}): Promise<void> {
   return new Promise((resolve) => {
     const start = performance.now();
-    const tick = (now) => {
+    const tick = (now: number) => {
       const t = Math.min(1, (now - start) / duration);
       onFrame(t);
       if (t < 1) requestAnimationFrame(tick);
@@ -453,5 +591,3 @@ function animatePull({ duration, onFrame }) {
     requestAnimationFrame(tick);
   });
 }
-
-export { PRESETS };

@@ -1,5 +1,38 @@
 {
   "name": "character-notification",
-  "private": true,
-  "type": "module"
+  "version": "0.1.0",
+  "description": "Toast notifications delivered by a character who pulls them in and pushes them out.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "./dist/styles.css"
+  ],
+  "keywords": [
+    "toast",
+    "toaster",
+    "notification",
+    "character"
+  ],
+  "scripts": {
+    "build": "tsc && cp src/styles.css dist/styles.css",
+    "dev": "npm run build && python3 -m http.server 5173",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
 }
