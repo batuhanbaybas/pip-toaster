@@ -1,7 +1,6 @@
 /**
  * Toaster placement. Left/right: Pip stands beside the card.
- * Top/bottom: Pip flanks the card (two Pips when the load is huge)
- * so they are not clipped off-screen above/below the toaster.
+ * Top/bottom: same flanking carry, sliding on Y — two Pips when huge.
  */
 
 export const POSITIONS = [
@@ -32,10 +31,10 @@ export function getPlacement(position) {
       ? {
           from: edge,
           axis: "y",
-          pipSide: edge === "top" ? "before" : "after",
-          direction: edge === "top" ? "bottom" : "top",
+          pipSide: "before",
+          direction: "right",
           face: "1",
-          leanSign: edge === "top" ? 1 : -1,
+          leanSign: 1,
         }
       : {
           from: edge,
@@ -45,14 +44,23 @@ export function getPlacement(position) {
           face: horizontal === "left" ? "-1" : "1",
           leanSign: horizontal === "left" ? 1 : -1,
         },
-    push: {
-      from: edge,
-      direction: edge,
-      axis: verticalEnter ? "y" : "x",
-      pipSide: edge === "left" || edge === "top" ? "after" : "before",
-      face: edge === "left" ? "-1" : "1",
-      leanSign: edge === "right" || edge === "bottom" ? 1 : -1,
-    },
+    push: verticalEnter
+      ? {
+          from: edge,
+          axis: "y",
+          pipSide: "before",
+          direction: "right",
+          face: "1",
+          leanSign: 1,
+        }
+      : {
+          from: edge,
+          direction: edge,
+          axis: "x",
+          pipSide: edge === "left" ? "after" : "before",
+          face: edge === "left" ? "-1" : "1",
+          leanSign: edge === "right" ? 1 : -1,
+        },
   };
 }
 

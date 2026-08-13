@@ -120,10 +120,12 @@ export function createScene({ character, lane, stage, docks }) {
         if (dual) {
           pip.dataset.face = index === 0 ? "1" : "-1";
           pip.dataset.push = index === 0 ? "right" : "left";
+        } else if (layout.axis === "y") {
+          pip.dataset.face = "1";
+          pip.dataset.push = "right";
         } else {
           pip.dataset.face = layout.face;
-          pip.dataset.push =
-            layout.axis === "y" || layout.mode === "push" ? layout.direction : "";
+          pip.dataset.push = layout.mode === "push" ? layout.direction : "";
         }
       }
       if (profile) pip.style.setProperty("--walk-ms", `${profile.walkMs}ms`);
@@ -174,12 +176,10 @@ export function createScene({ character, lane, stage, docks }) {
     lane.append(character);
     hideCharacter();
     activeWrap = null;
-    stage.classList.remove("is-heave");
   }
 
   async function playPull({ wrap, from, to, profile, placement, stateWhenMoving, leanSign }) {
     const sign = leanSign ?? placement.leanSign;
-    let heaved = false;
 
     await animatePull({
       duration: profile.duration,
@@ -198,10 +198,10 @@ export function createScene({ character, lane, stage, docks }) {
             : Math.min(profile.leanMax, 6 + Math.max(0, slope) * 8);
 
         const crew = crewOf(wrap);
+        const axisScale = placement.axis === "y" ? 0.35 : 1;
         crew.forEach((pip, index) => {
-          const leanDeg =
-            crew.length > 1 ? (index === 0 ? lean : -lean) : sign * lean;
-          pip.style.setProperty("--lean", `${leanDeg}deg`);
+          const dir = crew.length > 1 ? (index === 0 ? 1 : -1) : sign;
+          pip.style.setProperty("--lean", `${dir * lean * axisScale}deg`);
         });
 
         if (slipping) setCharacterState("slip", profile.id, profile, placement);
@@ -209,13 +209,6 @@ export function createScene({ character, lane, stage, docks }) {
           setCharacterState("strain", profile.id, profile, placement);
         } else {
           setCharacterState(stateWhenMoving, profile.id, profile, placement);
-        }
-
-        if (!heaved && slipping) {
-          heaved = true;
-          stage.classList.remove("is-heave");
-          void stage.offsetWidth;
-          stage.classList.add("is-heave");
         }
       },
     });
@@ -290,11 +283,7 @@ export function createScene({ character, lane, stage, docks }) {
       closable: true,
     });
 
-    const from = card.getBoundingClientRect();
     spacer.replaceWith(parked);
-    const to = parked.getBoundingClientRect();
-    parked.style.transform = `translate(${from.left - to.left}px, ${from.top - to.top}px)`;
-
     wrap.remove();
     parkCharacter();
 
@@ -310,13 +299,6 @@ export function createScene({ character, lane, stage, docks }) {
       closing: false,
     };
     toasts.set(job.id, toast);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        parked.style.transition = "transform 480ms cubic-bezier(0.16, 1, 0.3, 1)";
-        parked.style.transform = "none";
-      });
-    });
 
     if (toast.durationMs > 0) {
       toast.timer = window.setTimeout(() => {

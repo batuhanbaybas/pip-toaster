@@ -28,26 +28,32 @@
 html,
 body {
   margin: 0;
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
+  overflow-anchor: none;
   background: var(--bg);
   color: var(--ink);
   font-family: Outfit, system-ui, sans-serif;
 }
 
 body {
-  min-height: 100vh;
+  min-height: 100%;
 }
 
 .app {
   display: grid;
-  grid-template-columns: minmax(280px, 380px) 1fr;
-  min-height: 100vh;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* ——— Composer ——— */
 
 .composer {
+  min-height: 0;
   padding: 36px 32px;
+  overflow-y: auto;
   border-right: 1px solid var(--line);
   background: linear-gradient(180deg, #171a24 0%, #12141c 100%);
 }
@@ -199,7 +205,10 @@ body {
 
 .stage {
   position: relative;
-  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  overflow: clip;
+  overflow-anchor: none;
   background:
     radial-gradient(1200px 500px at 50% 110%, rgba(61, 122, 120, 0.16), transparent 60%),
     var(--bg);
@@ -220,6 +229,8 @@ body {
   position: absolute;
   inset: 0;
   z-index: 2;
+  overflow: clip;
+  overflow-anchor: none;
   pointer-events: none;
 }
 
@@ -230,6 +241,7 @@ body {
   gap: 10px;
   width: var(--dock-width);
   max-height: calc(100% - 48px);
+  overflow-anchor: none;
 }
 
 .dock[data-position="top-left"] {
@@ -368,6 +380,8 @@ body {
   position: absolute;
   inset: 0;
   z-index: 3;
+  overflow: clip;
+  overflow-anchor: none;
   pointer-events: none;
 }
 
@@ -416,19 +430,12 @@ body {
   align-items: flex-end;
 }
 
-.delivery[data-axis="y"][data-edge="top"] {
-  align-items: flex-start;
-}
-
-.delivery[data-axis="y"][data-edge="bottom"] {
-  align-items: flex-end;
-}
-
-.delivery[data-crew="2"] .delivery__card::before {
+.delivery[data-crew="2"] .delivery__card::before,
+.delivery[data-axis="y"] .delivery__card::before {
   left: -3px;
   right: auto;
   top: auto;
-  bottom: 22px;
+  bottom: 28px;
   width: 10px;
   height: 16px;
   margin-left: 0;
@@ -438,18 +445,12 @@ body {
   content: "";
   position: absolute;
   right: -3px;
-  bottom: 22px;
+  bottom: 28px;
   width: 10px;
   height: 16px;
   border-radius: 2px;
   background: #ead9c4;
   box-shadow: 1px 1px 0 rgba(44, 36, 28, 0.12);
-}
-
-.delivery[data-axis="y"][data-edge="top"][data-crew="2"] .delivery__card::before,
-.delivery[data-axis="y"][data-edge="top"][data-crew="2"] .delivery__card::after {
-  top: 22px;
-  bottom: auto;
 }
 
 .character[data-role="mate"] .character__hat,
@@ -461,8 +462,12 @@ body {
   background: linear-gradient(180deg, #4f8f7c, #2c5e5c);
 }
 
-.delivery[data-crew="2"] .character {
+.delivery .character {
   z-index: 1;
+}
+
+.delivery .delivery__card {
+  z-index: 0;
 }
 
 .delivery[data-crew="2"] .character:first-child {
@@ -777,17 +782,23 @@ body {
 .character[data-both-hands="true"][data-state="push"] .character__arm--back,
 .character[data-both-hands="true"][data-state="strain"] .character__arm--back,
 .character[data-both-hands="true"][data-state="slip"] .character__arm--back,
-.character[data-both-hands="true"][data-state="grab"] .character__arm--back {
+.character[data-both-hands="true"][data-state="grab"] .character__arm--back,
+.character[data-both-hands="true"][data-state="enter"] .character__arm--back,
+.character[data-both-hands="true"][data-state="exit"] .character__arm--back {
   transform: rotate(-62deg);
   left: 10px;
   z-index: 4;
 }
 
 /* Push: plant behind the card and shove toward the nearest edge */
+.character[data-push="right"][data-state="enter"] .character__arm--front,
+.character[data-push="right"][data-state="exit"] .character__arm--front,
 .character[data-push="right"][data-state="push"] .character__arm--front,
 .character[data-push="right"][data-state="grab"] .character__arm--front,
 .character[data-push="right"][data-state="strain"] .character__arm--front,
 .character[data-push="right"][data-state="slip"] .character__arm--front,
+.character[data-push="left"][data-state="enter"] .character__arm--front,
+.character[data-push="left"][data-state="exit"] .character__arm--front,
 .character[data-push="left"][data-state="push"] .character__arm--front,
 .character[data-push="left"][data-state="grab"] .character__arm--front,
 .character[data-push="left"][data-state="strain"] .character__arm--front,
@@ -802,57 +813,46 @@ body {
   z-index: 4;
 }
 
-.character[data-push="top"][data-state="enter"] .character__arm--front,
-.character[data-push="top"][data-state="pull"] .character__arm--front,
-.character[data-push="top"][data-state="push"] .character__arm--front,
-.character[data-push="top"][data-state="grab"] .character__arm--front,
-.character[data-push="top"][data-state="strain"] .character__arm--front,
-.character[data-push="top"][data-state="slip"] .character__arm--front,
-.character[data-push="top"][data-both-hands="true"] .character__arm--back {
-  transform: rotate(-158deg);
-}
-
-.character[data-push="top"][data-both-hands="true"] .character__arm--back {
-  left: 10px;
-  z-index: 4;
-}
-
-.character[data-push="bottom"][data-state="enter"] .character__arm--front,
-.character[data-push="bottom"][data-state="pull"] .character__arm--front,
-.character[data-push="bottom"][data-state="push"] .character__arm--front,
-.character[data-push="bottom"][data-state="grab"] .character__arm--front,
-.character[data-push="bottom"][data-state="strain"] .character__arm--front,
-.character[data-push="bottom"][data-state="slip"] .character__arm--front,
-.character[data-push="bottom"][data-both-hands="true"] .character__arm--back {
-  transform: rotate(12deg);
-}
-
-.character[data-push="bottom"][data-both-hands="true"] .character__arm--back {
-  left: 10px;
-  z-index: 4;
-}
-
-/* Barbell lift: crouched under the card */
-.character[data-axis="y"][data-push="top"] .character__leg {
-  height: 18px;
+/* Vertical carry: shuffle, don't walk sideways while the card slides */
+.character[data-axis="y"][data-state="enter"] .character__leg--left,
+.character[data-axis="y"][data-state="exit"] .character__leg--left,
+.character[data-axis="y"][data-state="push"] .character__leg--left,
+.character[data-axis="y"][data-state="pull"] .character__leg--left,
+.character[data-axis="y"][data-state="enter"] .character__leg--right,
+.character[data-axis="y"][data-state="exit"] .character__leg--right,
+.character[data-axis="y"][data-state="push"] .character__leg--right,
+.character[data-axis="y"][data-state="pull"] .character__leg--right {
+  animation: none;
+  height: 20px;
   border-radius: 8px 8px 4px 4px;
 }
 
-.character[data-axis="y"][data-push="top"] .character__torso {
-  bottom: 12px;
+.character[data-axis="y"][data-state="enter"] .character__leg--left,
+.character[data-axis="y"][data-state="push"] .character__leg--left,
+.character[data-axis="y"][data-state="pull"] .character__leg--left {
+  transform: rotate(10deg);
 }
 
-.character[data-axis="y"][data-push="top"] .character__body {
-  height: 24px;
+.character[data-axis="y"][data-state="enter"] .character__leg--right,
+.character[data-axis="y"][data-state="push"] .character__leg--right,
+.character[data-axis="y"][data-state="pull"] .character__leg--right {
+  transform: rotate(-10deg);
 }
 
-/* Press from above: planted on the card, shoving down */
-.character[data-axis="y"][data-push="bottom"] .character__leg {
-  height: 20px;
-}
-
-.character[data-axis="y"][data-push="bottom"] .character__torso {
+.character[data-axis="y"][data-state="enter"] .character__torso,
+.character[data-axis="y"][data-state="push"] .character__torso,
+.character[data-axis="y"][data-state="pull"] .character__torso,
+.character[data-axis="y"][data-state="grab"] .character__torso,
+.character[data-axis="y"][data-state="strain"] .character__torso,
+.character[data-axis="y"][data-state="slip"] .character__torso {
   bottom: 14px;
+}
+
+.character[data-axis="y"][data-state="enter"] .character__figure,
+.character[data-axis="y"][data-state="exit"] .character__figure,
+.character[data-axis="y"][data-state="push"] .character__figure,
+.character[data-axis="y"][data-state="pull"] .character__figure {
+  animation: carry-bob 480ms ease-in-out infinite;
 }
 
 .character[data-state="strain"] .character__fx,
@@ -1014,6 +1014,16 @@ body {
   }
 }
 
+@keyframes carry-bob {
+  0%,
+  100% {
+    transform: scaleX(var(--face)) translateY(0);
+  }
+  50% {
+    transform: scaleX(var(--face)) translateY(5px);
+  }
+}
+
 @keyframes drip {
   0% {
     transform: translateY(0);
@@ -1045,37 +1055,21 @@ body {
   }
 }
 
-.stage.is-heave {
-  animation: stage-heave 420ms ease-out;
-}
-
-@keyframes stage-heave {
-  0%,
-  100% {
-    transform: none;
-  }
-  30% {
-    transform: translateX(-3px);
-  }
-  60% {
-    transform: translateX(2px);
-  }
-}
-
 @media (max-width: 860px) {
   .app {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, auto) minmax(0, 1fr);
   }
 
   .composer {
+    max-height: 46vh;
     border-right: 0;
     border-bottom: 1px solid var(--line);
     padding: 24px 20px;
   }
 
   .stage {
-    min-height: 420px;
+    min-height: 0;
   }
 
   .presets {
