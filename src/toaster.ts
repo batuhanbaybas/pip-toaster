@@ -1,7 +1,15 @@
 import { mountHost } from "./host.js";
 import { parsePosition, type ToastPosition } from "./placement.js";
 import { createScene } from "./scene.js";
-import type { ToastPayload, Toaster, ToasterConfig, ToasterOptions } from "./types.js";
+import { parseStatus, type ToastStatus } from "./status.js";
+import type {
+  ToastAction,
+  ToastContent,
+  ToastPayload,
+  Toaster,
+  ToasterConfig,
+  ToasterOptions,
+} from "./types.js";
 
 interface RuntimeConfig {
   position: ToastPosition;
@@ -11,7 +19,10 @@ interface RuntimeConfig {
 
 interface NormalizedToast {
   title: string;
-  body: string;
+  message: string;
+  content?: ToastContent;
+  actions: ToastAction[];
+  status: ToastStatus;
   position: ToastPosition;
   durationMs: number;
 }
@@ -22,25 +33,59 @@ const DEFAULTS: RuntimeConfig = {
   zIndex: 2147483000,
 };
 
+function asActions(action: ToastPayload["action"]): ToastAction[] {
+  if (!action) return [];
+  return Array.isArray(action) ? action : [action];
+}
+
 function normalize(input: string | ToastPayload, defaults: RuntimeConfig): NormalizedToast {
   if (typeof input === "string") {
     return {
-      title: input,
-      body: "",
+      title: "",
+      message: input,
+      actions: [],
+      status: "default",
       position: defaults.position,
       durationMs: defaults.duration,
     };
   }
 
-  const payload = input;
-  const title = payload.title ?? payload.message ?? "";
-  const body = payload.body ?? payload.description ?? "";
+  const title = String(input.title ?? "");
+  const message = String(input.message ?? input.body ?? input.description ?? "");
+  const actions = asActions(input.action);
 
   return {
-    title: String(title),
-    body: String(body),
-    position: payload.position ?? defaults.position,
-    durationMs: payload.duration ?? defaults.duration,
+    title,
+    message,
+    content: input.content,
+    actions,
+    status: parseStatus(input.status),
+    position: input.position ?? defaults.position,
+    durationMs: input.duration ?? defaults.duration,
+  };
+}
+
+function isEmpty(payload: NormalizedToast): boolean {
+  return (
+    !payload.title.trim() &&
+    !payload.message.trim() &&
+    payload.content == null &&
+    payload.actions.length === 0
+  );
+}
+
+function statusMethods(
+  show: (input: string | ToastPayload) => string,
+): Pick<Toaster, "info" | "success" | "warning" | "error"> {
+  const bind = (status: ToastStatus) => (input: string | ToastPayload) => {
+    if (typeof input === "string") return show({ message: input, status });
+    return show({ ...input, status });
+  };
+  return {
+    info: bind("info"),
+    success: bind("success"),
+    warning: bind("warning"),
+    error: bind("error"),
   };
 }
 
@@ -48,7 +93,7 @@ function withToasterApi(
   show: (input: string | ToastPayload) => string,
   methods: Pick<Toaster, "configure" | "dismiss" | "dismissAll" | "destroy">,
 ): Toaster {
-  return Object.assign(show, methods);
+  return Object.assign(show, statusMethods(show), methods);
 }
 
 function noopToaster(): Toaster {
@@ -90,7 +135,7 @@ export function createToaster(options: ToasterOptions = {}): Toaster {
 
   const show = (input: string | ToastPayload): string => {
     const payload = normalize(input, config);
-    if (!payload.title.trim() && !payload.body.trim()) return "";
+    if (isEmpty(payload)) return "";
     return scene.enqueue(payload);
   };
 

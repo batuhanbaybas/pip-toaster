@@ -3,19 +3,19 @@ import { classifyEffort, createToaster } from "../dist/index.js";
 const PRESETS = {
   light: {
     title: "Yeni mesaj",
-    body: "Toplantı 10 dk içinde.",
+    message: "Toplantı 10 dk içinde.",
   },
   normal: {
     title: "Tasarım incelemesi",
-    body: "Tasarım incelemesi 10 dakika içinde başlıyor. Odada hazır ol, notlarını yanına al.",
+    message: "Tasarım incelemesi 10 dakika içinde başlıyor. Odada hazır ol, notlarını yanına al.",
   },
   heavy: {
     title: "Sprint özeti gecikti",
-    body: "Sprint review notları hâlâ eksik: API sözleşmesi, hata bütçesi ve bildirim kuyruğunun geri basma davranışı yazılmadı. Lütfen toplantıdan önce bu üç maddeyi tamamla, aksi halde demo kayar ve paydaşlara yeni bir slot açmak zorunda kalırız.",
+    message: "Sprint review notları hâlâ eksik: API sözleşmesi, hata bütçesi ve bildirim kuyruğunun geri basma davranışı yazılmadı. Lütfen toplantıdan önce bu üç maddeyi tamamla, aksi halde demo kayar ve paydaşlara yeni bir slot açmak zorunda kalırız.",
   },
   massive: {
     title: "Üretim alarmı — okumadan geçme",
-    body: "Kuyruk derinliği son 12 dakikada 4 katına çıktı. Worker’lar mesajı alıyor ama işledikten sonra ack atamıyor; retry fırtınası bildirim servisini şişiriyor. Kısa mesajlar hâlâ geçiyor, uzun gövdeli payload’lar ise worker’ı 2–3 saniye meşgul ediyor. Öncelik: tüketici timeout’unu düşür, poison mesajı ayrı kuyruğa al, ardından uzun bildirimleri parçala. Bu metin kasıtlı olarak uzun — Pip’in gerçekten ağır bir şeyi sürüklemesini izlemek için.",
+    message: "Kuyruk derinliği son 12 dakikada 4 katına çıktı. Worker’lar mesajı alıyor ama işledikten sonra ack atamıyor; retry fırtınası bildirim servisini şişiriyor. Kısa mesajlar hâlâ geçiyor, uzun gövdeli payload’lar ise worker’ı 2–3 saniye meşgul ediyor. Öncelik: tüketici timeout’unu düşür, poison mesajı ayrı kuyruğa al, ardından uzun bildirimleri parçala. Bu metin kasıtlı olarak uzun — Pip’in gerçekten ağır bir şeyi sürüklemesini izlemek için.",
   },
 };
 
@@ -31,14 +31,23 @@ const bodyInput = document.querySelector("#body-input");
 const preview = document.querySelector("#effort-preview");
 const sendBtn = document.querySelector("#send-btn");
 const durationInput = document.querySelector("#duration-input");
+const actionToggle = document.querySelector("#action-toggle");
 
 const toast = createToaster({
   target: document.querySelector("#stage"),
   position: "bottom-right",
-  labels: { kicker: "Bildirim", close: "Kapat" },
+  labels: {
+    kicker: "Bildirim",
+    close: "Kapat",
+    info: "Bilgi",
+    success: "Başarılı",
+    warning: "Uyarı",
+    error: "Hata",
+  },
 });
 
 let position = "bottom-right";
+let status = "default";
 
 const cardBg = document.querySelector("#card-bg");
 const cardColor = document.querySelector("#card-color");
@@ -80,20 +89,32 @@ function applyPreset(id) {
   const preset = PRESETS[id];
   if (!preset) return;
   titleInput.value = preset.title;
-  bodyInput.value = preset.body;
+  bodyInput.value = preset.message;
   syncPreview();
 }
 
 function send() {
   const title = titleInput.value;
-  const body = bodyInput.value;
-  if (!title.trim() && !body.trim()) return;
+  const message = bodyInput.value;
+  if (!title.trim() && !message.trim()) return;
   const seconds = Number(durationInput.value);
   toast({
     title,
-    body,
+    message,
     position,
     duration: Number.isFinite(seconds) ? seconds * 1000 : 5000,
+    action: actionToggle.checked
+      ? [
+          { label: "Tamam" },
+          {
+            label: "Geri al",
+            variant: "ghost",
+            onClick: () => {
+              console.info("Geri al");
+            },
+          },
+        ]
+      : undefined,
   });
 }
 

@@ -111,6 +111,24 @@ body {
   color: var(--muted);
 }
 
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -4px 0 18px;
+  font-size: 0.85rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
 .placement {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -173,6 +191,12 @@ body {
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   margin-bottom: 16px;
+}
+
+.statuses {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
 }
 
 .preset,

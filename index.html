@@ -52,11 +52,27 @@
           </div>
         </div>
 
+        <div class="field">
+          <span>Durum</span>
+          <div class="statuses" role="group" aria-label="Bildirim durumu">
+            <button type="button" class="preset is-active" data-status="default">Normal</button>
+            <button type="button" class="preset" data-status="info">Bilgi</button>
+            <button type="button" class="preset" data-status="success">Başarı</button>
+            <button type="button" class="preset" data-status="warning">Uyarı</button>
+            <button type="button" class="preset" data-status="error">Hata</button>
+          </div>
+        </div>
+
         <label class="field">
           <span>Otomatik kapanış (sn)</span>
           <input id="duration-input" type="number" min="0" max="30" step="1" value="5" />
         </label>
-        <p class="field-hint">0 yazarsan sadece × ile kapanır — Pip yine gelip alır.</p>
+        <p class="field-hint">0 yazarsan Pip yanında bekler, kitap okur. × deyince kitabı kapatıp kartı götürür.</p>
+
+        <label class="check">
+          <input id="action-toggle" type="checkbox" />
+          <span>Aksiyon butonları ekle</span>
+        </label>
 
         <div class="field">
           <span>Kart rengi</span>

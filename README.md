@@ -23,9 +23,28 @@ toast("Meeting in 10 minutes.");
 
 toast({
   title: "Sprint review",
-  body: "Bring your notes. The API contract is still missing.",
+  message: "Bring your notes. The API contract is still missing.",
   position: "bottom-right",
   duration: 5000, // ms; 0 = sticky until ×
+});
+
+toast({
+  title: "Deploy failed",
+  message: "The worker ran out of memory.",
+  action: [
+    { label: "Retry", onClick: () => {} },
+    { label: "Details", variant: "ghost", dismiss: false },
+  ],
+});
+
+toast({
+  title: "File deleted",
+  content: (ctx) => {
+    const undo = document.createElement("button");
+    undo.textContent = "Undo";
+    undo.addEventListener("click", () => ctx.dismiss());
+    return undo;
+  },
 });
 
 toast.configure({ position: "top-right", duration: 4000 });
@@ -34,6 +53,8 @@ toast.dismissAll();
 ```
 
 `toast()` returns an id. `duration: 0` stays until the close button — Pip still walks over and hauls it off.
+
+`title` and `message` are the card copy (`body` / `description` still work as aliases of `message`). `action` renders footer buttons. `content` is a slot for your own nodes (buttons, links, anything `Node`). Host CSS does not pierce the Shadow DOM — unstyled `button` / `a` inside `content` pick up the toast styles, or pass a factory so listeners survive the carry animation.
 
 ### Isolated instance
 

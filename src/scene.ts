@@ -1,4 +1,5 @@
 import { getProfile, sampleCurve, type EffortId, type EffortProfile } from "./effort.js";
+import { buildCard } from "./note.js";
 import {
   crewSize,
   getPlacement,
@@ -15,17 +16,34 @@ import {
   type ToastPosition,
 } from "./placement.js";
 import type { DockMap } from "./host.js";
-import type { ToasterLabels } from "./types.js";
+import { parseStatus, type ToastStatus } from "./status.js";
+import type { ToastAction, ToastContent, ToasterLabels } from "./types.js";
 
 const DEFAULT_LABELS = {
   kicker: "Notice",
   close: "Dismiss",
+  info: "Info",
+  success: "Success",
+  warning: "Warning",
+  error: "Error",
 } as const;
 
 type ResolvedLabels = {
   kicker: string;
   close: string;
+  info: string;
+  success: string;
+  warning: string;
+  error: string;
 };
+
+function statusKicker(status: ToastStatus, labels: ResolvedLabels): string {
+  if (status === "info") return labels.info;
+  if (status === "success") return labels.success;
+  if (status === "warning") return labels.warning;
+  if (status === "error") return labels.error;
+  return labels.kicker;
+}
 
 type CharacterState =
   | "hidden"
@@ -44,7 +62,10 @@ interface DeliverJob {
   kind: "deliver";
   id: string;
   title: string;
-  body: string;
+  message: string;
+  content?: ToastContent;
+  actions: ToastAction[];
+  status: ToastStatus;
   position: ToastPosition;
   durationMs: number;
 }
@@ -59,7 +80,10 @@ type Job = DeliverJob | DismissJob;
 interface ParkedToast {
   id: string;
   title: string;
-  body: string;
+  message: string;
+  content?: ToastContent;
+  actions: ToastAction[];
+  status: ToastStatus;
   profile: EffortProfile;
   placement: Placement;
   el: HTMLElement;
@@ -79,7 +103,10 @@ export interface SceneOptions {
 
 export interface EnqueueInput {
   title: string;
-  body: string;
+  message: string;
+  content?: ToastContent;
+  actions: ToastAction[];
+  status: ToastStatus;
   position: ToastPosition;
   durationMs: number;
 }
@@ -108,65 +135,6 @@ function setWrapPos(el: HTMLElement, point: Point): void {
   el.style.transform = `translate(${point.x}px, ${point.y}px)`;
 }
 
-function effortLabel(id: EffortId): string {
-  if (id === "light") return "light";
-  if (id === "heavy") return "heavy";
-  if (id === "massive") return "massive";
-  return "normal";
-}
-
-function buildCard({
-  title,
-  body,
-  effort,
-  closable,
-  id,
-  labels,
-}: {
-  title: string;
-  body: string;
-  effort: EffortId;
-  closable: boolean;
-  id?: string;
-  labels: ResolvedLabels;
-}): HTMLElement {
-  const article = document.createElement("article");
-  article.className = closable ? "note" : "delivery__card";
-  article.dataset.effort = effort;
-  if (id) article.dataset.id = id;
-
-  const kicker = document.createElement("div");
-  kicker.className = "note__kicker";
-
-  const kind = document.createElement("span");
-  kind.textContent = labels.kicker;
-  const weight = document.createElement("span");
-  weight.className = "note__weight";
-  weight.textContent = effortLabel(effort);
-  kicker.append(kind, weight);
-
-  const heading = document.createElement("h2");
-  heading.className = "note__title";
-  heading.textContent = title || labels.kicker;
-
-  const text = document.createElement("p");
-  text.className = "note__body";
-  text.textContent = body;
-
-  article.append(kicker, heading, text);
-
-  if (closable) {
-    const close = document.createElement("button");
-    close.type = "button";
-    close.className = "note__close";
-    close.setAttribute("aria-label", labels.close);
-    close.textContent = "×";
-    article.append(close);
-  }
-
-  return article;
-}
-
 export function createScene({
   character,
   lane,
@@ -182,8 +150,35 @@ export function createScene({
   let seq = 0;
   let dismissInFlight = false;
   let waitingOnId: string | null = null;
+  let actingStatus: ToastStatus = "default";
 
   let activeWrap: HTMLElement | null = null;
+
+  function paintCard(
+    item: {
+      id: string;
+      title: string;
+      message: string;
+      content?: ToastContent;
+      actions: ToastAction[];
+      status: ToastStatus;
+    },
+    effort: EffortId,
+    closable: boolean,
+  ): HTMLElement {
+    return buildCard({
+      id: item.id,
+      title: item.title,
+      message: item.message,
+      effort,
+      closable,
+      labels: { kicker: statusKicker(item.status, copy), close: copy.close },
+      content: item.content,
+      actions: item.actions,
+      status: item.status,
+      onDismiss: requestDismiss,
+    });
+  }
 
   function crewOf(wrap: HTMLElement | null): HTMLElement[] {
     if (!wrap) return [character];
@@ -194,16 +189,18 @@ export function createScene({
   function setCharacterState(
     state: CharacterState,
     effort: EffortId,
-    profile: EffortProfile | undefined,
-    layout: ActingLayout | undefined,
+    profile?: EffortProfile,
+    layout?: ActingLayout,
   ): void {
     const crew = crewOf(activeWrap);
     const dual = crew.length > 1;
     crew.forEach((pip, index) => {
       pip.dataset.state = state;
       pip.dataset.effort = effort;
+      pip.dataset.status = actingStatus;
       pip.dataset.bothHands = String(
-        dual || layout?.axis === "y" || layout?.mode === "push" || Boolean(profile?.bothHands),
+        state !== "read" &&
+          (dual || layout?.axis === "y" || layout?.mode === "push" || Boolean(profile?.bothHands)),
       );
       if (layout) {
         pip.dataset.axis = layout.axis ?? "x";
@@ -238,6 +235,7 @@ export function createScene({
     wrap.dataset.dir = layout.direction ?? layout.from;
     wrap.dataset.edge = layout.from;
     wrap.dataset.crew = String(crew);
+    wrap.dataset.status = card.dataset.status ?? "default";
     wrap.style.visibility = "hidden";
 
     if (crew === 2) {
@@ -283,9 +281,10 @@ export function createScene({
   async function closeBook() {
     if (!waitingOnId) return;
     character.style.setProperty("--lean", "0deg");
-    setCharacterState("release", character.dataset.effort ?? "normal");
+    setCharacterState("release", (character.dataset.effort as EffortId) || "normal");
     await wait(220);
     detachFromSlot();
+    hideCharacter();
   }
 
   async function playPull({
@@ -346,19 +345,13 @@ export function createScene({
   }
 
   async function playDelivery(job: DeliverJob): Promise<void> {
+    actingStatus = job.status;
     const placement = getPlacement(job.position);
-    const profile = getProfile(job.title, job.body);
+    const profile = getProfile(job.title, job.message);
     const dock = docks[placement.id];
     const reduced = prefersReducedMotion();
 
-    const card = buildCard({
-      id: job.id,
-      title: job.title,
-      body: job.body,
-      effort: profile.id,
-      closable: false,
-      labels: copy,
-    });
+    const card = paintCard(job, profile.id, false);
 
     const layout = withMode(placement, "pull");
     const wrap = mountWrap(layout, card, profile);
@@ -368,7 +361,8 @@ export function createScene({
 
     if (reduced) {
       revealWrap(wrap, travel.end);
-      settleToast(job, wrap, spacer, profile, placement, null);
+      const stay = job.durationMs === 0 && jobs.length === 0 && !dismissInFlight;
+      settleToast(job, wrap, spacer, profile, placement, stay ? layout : null);
       return;
     }
 
@@ -412,14 +406,7 @@ export function createScene({
     placement: Placement,
     waitLayout: ActingLayout | null,
   ): void {
-    const parked = buildCard({
-      id: job.id,
-      title: job.title,
-      body: job.body,
-      effort: profile.id,
-      closable: true,
-      labels: copy,
-    });
+    const parked = paintCard(job, profile.id, true);
 
     lane.querySelectorAll('.character[data-role="mate"]').forEach((el) => el.remove());
 
@@ -446,7 +433,10 @@ export function createScene({
     const toast: ParkedToast = {
       id: job.id,
       title: job.title,
-      body: job.body,
+      message: job.message,
+      content: job.content,
+      actions: job.actions,
+      status: job.status,
       profile,
       placement,
       el: parked,
@@ -477,26 +467,24 @@ export function createScene({
 
     window.clearTimeout(toast.timer);
     toast.closing = true;
+    waitingOnId = null;
+    actingStatus = toast.status;
 
     const { profile, placement, el } = toast;
     const reduced = prefersReducedMotion();
+    const slot = el.closest(".slot");
 
     const spacer = document.createElement("div");
     spacer.className = "note note--spacer";
     spacer.style.height = `${el.offsetHeight}px`;
-    el.replaceWith(spacer);
-    spacer.scrollIntoView({ block: "nearest", inline: "nearest" });
 
-    const card = buildCard({
-      id: toast.id,
-      title: toast.title,
-      body: toast.body,
-      effort: profile.id,
-      closable: false,
-      labels: copy,
-    });
+    const card = paintCard(toast, profile.id, false);
     const layout = withMode(placement, "push");
     const wrap = mountWrap(layout, card, profile);
+
+    if (slot instanceof HTMLElement) slot.replaceWith(spacer);
+    else el.replaceWith(spacer);
+    spacer.scrollIntoView({ block: "nearest", inline: "nearest" });
 
     const travel = measureTravel({ stage, wrap, card, slot: spacer, placement: layout });
 
@@ -549,9 +537,8 @@ export function createScene({
       if (waitingOnId) {
         if (fromWait) {
           character.style.setProperty("--lean", "0deg");
-          setCharacterState("release", character.dataset.effort ?? "normal");
+          setCharacterState("release", (character.dataset.effort as EffortId) || "normal");
           await wait(180);
-          detachFromSlot();
         } else {
           await closeBook();
         }
@@ -586,14 +573,17 @@ export function createScene({
   });
 
   return {
-    enqueue({ title, body, position, durationMs }) {
+    enqueue({ title, message, content, actions, status, position, durationMs }) {
       dismissInFlight = false;
       const id = `toast-${++seq}`;
       jobs.push({
         kind: "deliver",
         id,
         title: title.trim(),
-        body: body.trim(),
+        message: message.trim(),
+        content,
+        actions,
+        status: parseStatus(status),
         position: parsePosition(position),
         durationMs: Number.isFinite(durationMs) ? Math.max(0, durationMs) : 5000,
       });
