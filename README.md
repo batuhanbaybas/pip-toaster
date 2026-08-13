@@ -40,15 +40,6 @@ toast({
 });
 
 toast({
-  title: "Deploy failed",
-  message: "The worker ran out of memory.",
-  action: [
-    { label: "Retry", onClick: () => {} },
-    { label: "Details", variant: "ghost", dismiss: false },
-  ],
-});
-
-toast({
   title: "File deleted",
   content: (ctx) => {
     const undo = document.createElement("button");
