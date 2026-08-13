@@ -114,9 +114,8 @@ export function withMode(placement: Placement, mode: "pull" | "push"): ActingLay
   return { ...placement, ...pose, mode };
 }
 
-export function revealDockSlot(dock: HTMLElement, placement: Placement): void {
-  if (placement.vertical === "bottom") dock.scrollTop = dock.scrollHeight;
-  else dock.scrollTop = 0;
+export function revealDockSlot(_dock: HTMLElement, _placement: Placement): void {
+  /* Dock does not scroll; extra toasts may overlap or clip at the viewport. */
 }
 
 export function insertSlot(dock: HTMLElement, placement: Placement, height: number): HTMLElement {

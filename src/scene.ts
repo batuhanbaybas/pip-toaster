@@ -421,7 +421,7 @@ export function createScene({
       activeWrap = null;
       waitingOnId = job.id;
       setCharacterState("read", profile.id, profile, waitLayout);
-      character.style.setProperty("--lean", waitLayout.pipSide === "before" ? "8deg" : "-8deg");
+      character.style.setProperty("--lean", "0deg");
     } else {
       spacer.replaceWith(parked);
       wrap.remove();
@@ -484,7 +484,6 @@ export function createScene({
 
     if (slot instanceof HTMLElement) slot.replaceWith(spacer);
     else el.replaceWith(spacer);
-    spacer.scrollIntoView({ block: "nearest", inline: "nearest" });
 
     const travel = measureTravel({ stage, wrap, card, slot: spacer, placement: layout });
 

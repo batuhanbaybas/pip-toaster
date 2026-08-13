@@ -74,23 +74,8 @@
   flex-direction: column;
   gap: var(--_dock-gap);
   width: var(--_toast-width);
-  max-height: calc(100% - 2 * var(--_dock-offset));
-  overflow-x: hidden;
-  overflow-y: auto;
-  overflow-anchor: none;
-  overscroll-behavior: contain;
+  overflow: visible;
   pointer-events: auto;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--_toast-color) 40%, transparent) transparent;
-}
-
-.dock::-webkit-scrollbar {
-  width: 8px;
-}
-
-.dock::-webkit-scrollbar-thumb {
-  border-radius: 99px;
-  background: color-mix(in srgb, var(--_toast-color) 35%, transparent);
 }
 
 .dock:empty {
@@ -706,53 +691,121 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--_pip-skin) 70%, black);
 }
 
+.character__arm--back .character__hand {
+  right: auto;
+  left: -1px;
+  opacity: 0;
+}
+
+.character__chair {
+  position: absolute;
+  left: 2px;
+  right: 4px;
+  bottom: 0;
+  z-index: 0;
+  height: 40px;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    transform 280ms var(--ease-out);
+}
+
+.character__chair-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 9px;
+  height: 34px;
+  border-radius: 5px 5px 2px 2px;
+  background: linear-gradient(180deg, #c08a52, #7a4a28);
+  box-shadow:
+    inset -2px 0 0 rgba(0, 0, 0, 0.22),
+    1px 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.character__chair-seat {
+  position: absolute;
+  top: 18px;
+  left: 1px;
+  right: 2px;
+  height: 8px;
+  border-radius: 2px 3px 2px 2px;
+  background: linear-gradient(180deg, #d4a066, #8d552c);
+  box-shadow: 0 2px 0 #5a3418;
+}
+
+.character__chair-leg {
+  position: absolute;
+  top: 26px;
+  width: 4px;
+  height: 14px;
+  border-radius: 1px;
+  background: #5c361c;
+}
+
+.character__chair-leg--l {
+  left: 6px;
+}
+
+.character__chair-leg--r {
+  right: 6px;
+}
+
 .character__book {
   position: absolute;
-  top: 30px;
+  top: 34px;
   left: 50%;
-  z-index: 3;
-  width: 20px;
-  height: 15px;
+  z-index: 4;
+  width: 28px;
+  height: 16px;
   margin-left: -10px;
-  perspective: 48px;
+  perspective: 64px;
   opacity: 0;
-  transform: scale(0.35) rotate(-18deg);
+  transform: scale(0.4) translateY(6px);
   transform-origin: 50% 100%;
   pointer-events: none;
-  transition: opacity 160ms ease, transform 200ms var(--ease-out);
+  transition: opacity 180ms ease, transform 240ms var(--ease-out);
 }
 
 .character__book-cover {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 46%;
   border-radius: 1px 3px 3px 1px;
-  background: linear-gradient(180deg, #9a4f32, #6b321f);
-  box-shadow:
-    1px 1px 0 #3f1c12,
-    inset 0 0 0 1px color-mix(in srgb, #c47a58 35%, transparent);
+  background: linear-gradient(180deg, #a05632, #6b321f);
+  transform: rotate(10deg);
+  transform-origin: left center;
+  box-shadow: 1px 1px 0 #3f1c12;
 }
 
 .character__book-cover::before {
   content: "";
   position: absolute;
-  top: 2px;
-  bottom: 2px;
-  left: 3px;
-  width: 2px;
-  border-radius: 1px;
-  background: color-mix(in srgb, #3f1c12 70%, #c47a58);
+  top: 0;
+  right: 100%;
+  bottom: 0;
+  width: 100%;
+  border-radius: 3px 1px 1px 3px;
+  background: linear-gradient(180deg, #8a4528, #5c2818);
+  transform: rotate(-20deg);
+  transform-origin: right center;
+  box-shadow: -1px 1px 0 #3f1c12;
 }
 
 .character__book-page {
   position: absolute;
   top: 2px;
-  right: 2px;
+  right: 10%;
   bottom: 2px;
-  left: 6px;
-  border-radius: 0 2px 2px 0;
+  left: 10%;
+  border-radius: 1px;
   background: #f6f0e4;
-  box-shadow: inset -1px 0 0 rgba(90, 60, 40, 0.18);
-  transform-origin: left center;
+  box-shadow: inset 0 0 0 1px rgba(90, 60, 40, 0.12);
+  transform-origin: 50% center;
 }
 
 /* FX */
@@ -1042,56 +1095,86 @@
 }
 
 .character[data-state="read"] {
-  --bob: 8px;
+  --bob: 0px;
+}
+
+.character[data-state="read"] .character__chair {
+  opacity: 1;
+  transform: none;
 }
 
 .character[data-state="read"] .character__leg {
-  height: 20px;
-  border-radius: 8px 8px 5px 5px;
+  z-index: 1;
+  height: 16px;
+  border-radius: 6px;
+}
+
+.character[data-state="read"] .character__leg::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 0;
+  width: 11px;
+  height: 16px;
+  border-radius: 0 0 5px 5px;
+  background: var(--_pip-boots);
+  transform-origin: 50% 0;
 }
 
 .character[data-state="read"] .character__leg--left {
-  transform: rotate(28deg);
+  transform: rotate(-68deg);
+}
+
+.character[data-state="read"] .character__leg--left::after {
+  transform: rotate(74deg);
 }
 
 .character[data-state="read"] .character__leg--right {
-  transform: rotate(-18deg);
+  transform: rotate(-82deg);
+}
+
+.character[data-state="read"] .character__leg--right::after {
+  transform: rotate(86deg);
 }
 
 .character[data-state="read"] .character__torso {
-  bottom: 10px;
-}
-
-.character[data-state="read"] .character__figure {
-  animation: read-breathe 2.8s ease-in-out infinite;
+  bottom: 20px;
+  animation: read-breathe 3.2s ease-in-out infinite;
 }
 
 .character[data-state="read"] .character__head {
-  transform: rotate(14deg) translate(2px, 5px);
-}
-
-.character[data-state="read"] .character__arm--front {
-  top: 28px;
-  transform: rotate(-48deg);
+  transform: rotate(16deg) translate(4px, 7px);
 }
 
 .character[data-state="read"] .character__arm--back {
-  top: 28px;
-  transform: rotate(42deg);
+  top: 32px;
+  left: 8px;
+  height: 20px;
+  transform: rotate(-52deg);
+  z-index: 3;
+}
+
+.character[data-state="read"] .character__arm--front {
+  top: 32px;
+  right: -2px;
+  height: 20px;
+  transform: rotate(44deg);
+  z-index: 5;
 }
 
 .character[data-state="read"] .character__hand {
-  opacity: 0;
+  opacity: 1;
+  width: 10px;
+  height: 10px;
 }
 
 .character[data-state="read"] .character__book {
   opacity: 1;
-  transform: scale(1) rotate(-14deg);
-  transition: opacity 180ms ease, transform 220ms var(--ease-out);
+  transform: scale(1) rotate(-6deg);
 }
 
 .character[data-state="read"] .character__book-page {
-  animation: page-flip 4.6s ease-in-out infinite;
+  animation: page-flip 5.4s ease-in-out infinite;
 }
 
 .character[data-state="read"] .character__eye {
@@ -1190,10 +1273,10 @@
 @keyframes read-breathe {
   0%,
   100% {
-    transform: scaleX(var(--face)) translateY(0);
+    transform: translateY(0);
   }
   50% {
-    transform: scaleX(var(--face)) translateY(2px);
+    transform: translateY(-1.5px);
   }
 }
 

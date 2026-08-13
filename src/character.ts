@@ -14,10 +14,18 @@ export function createCharacter(): HTMLElement {
       <span class="strain-mark strain-mark--2"></span>
     </div>
     <div class="character__figure">
+      <div class="character__chair" aria-hidden="true">
+        <span class="character__chair-back"></span>
+        <span class="character__chair-seat"></span>
+        <span class="character__chair-leg character__chair-leg--l"></span>
+        <span class="character__chair-leg character__chair-leg--r"></span>
+      </div>
       <div class="character__leg character__leg--left"></div>
       <div class="character__leg character__leg--right"></div>
       <div class="character__torso">
-        <div class="character__arm character__arm--back"></div>
+        <div class="character__arm character__arm--back">
+          <span class="character__hand"></span>
+        </div>
         <div class="character__body"></div>
         <div class="character__arm character__arm--front">
           <span class="character__hand"></span>
