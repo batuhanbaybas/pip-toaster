@@ -102,6 +102,7 @@ function send() {
     title,
     message,
     position,
+    status,
     duration: Number.isFinite(seconds) ? seconds * 1000 : 5000,
     action: actionToggle.checked
       ? [
@@ -126,6 +127,14 @@ document.querySelectorAll("[data-preset]").forEach((btn) => {
     document.querySelectorAll("[data-preset]").forEach((b) => b.classList.remove("is-active"));
     btn.classList.add("is-active");
     applyPreset(btn.dataset.preset);
+  });
+});
+
+document.querySelectorAll(".statuses [data-status]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".statuses [data-status]").forEach((b) => b.classList.remove("is-active"));
+    btn.classList.add("is-active");
+    status = btn.dataset.status;
   });
 });
 

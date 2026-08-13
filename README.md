@@ -21,6 +21,17 @@ import { toast } from "character-notification";
 
 toast("Meeting in 10 minutes.");
 
+toast.success("Saved.");
+toast.warning({ title: "Queue lag", message: "Workers are retrying." });
+toast.error({
+  title: "Deploy failed",
+  message: "The worker ran out of memory.",
+  action: [
+    { label: "Retry", onClick: () => {} },
+    { label: "Details", variant: "ghost", dismiss: false },
+  ],
+});
+
 toast({
   title: "Sprint review",
   message: "Bring your notes. The API contract is still missing.",
@@ -54,7 +65,7 @@ toast.dismissAll();
 
 `toast()` returns an id. `duration: 0` stays until the close button — Pip still walks over and hauls it off.
 
-`title` and `message` are the card copy (`body` / `description` still work as aliases of `message`). `action` renders footer buttons. `content` is a slot for your own nodes (buttons, links, anything `Node`). Host CSS does not pierce the Shadow DOM — unstyled `button` / `a` inside `content` pick up the toast styles, or pass a factory so listeners survive the carry animation.
+`title` and `message` are the card copy (`body` / `description` still work as aliases of `message`). `status` is `default` · `info` · `success` · `warning` · `error` — Pip’s shirt and the card accent follow it (`toast.success()` / `.warning()` / `.error()` / `.info()` are shortcuts). `action` renders footer buttons. `content` is a slot for your own nodes (buttons, links, anything `Node`). Host CSS does not pierce the Shadow DOM — unstyled `button` / `a` inside `content` pick up the toast styles, or pass a factory so listeners survive the carry animation.
 
 ### Isolated instance
 
