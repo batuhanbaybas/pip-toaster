@@ -1,4 +1,12 @@
 import { getProfile, sampleCurve } from "./effort.js";
+import {
+  getPlacement,
+  insertSlot,
+  lerpPoint,
+  measureTravel,
+  offsetAlong,
+  parsePosition,
+} from "./placement.js";
 
 const PRESETS = {
   light: {
@@ -29,18 +37,36 @@ function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function interpolate(from, to, t) {
-  return from + (to - from) * t;
+function easeOutCubic(t) {
+  return 1 - (1 - t) ** 3;
 }
 
-function buildCard({ title, body, effort, closable }) {
+function setWrapPos(el, point) {
+  el.style.transform = `translate(${point.x}px, ${point.y}px)`;
+}
+
+function effortLabel(id) {
+  if (id === "light") return "tüy";
+  if (id === "heavy") return "ağır";
+  if (id === "massive") return "devasa";
+  return "normal";
+}
+
+function buildCard({ title, body, effort, closable, id }) {
   const article = document.createElement("article");
   article.className = closable ? "note" : "delivery__card";
   article.dataset.effort = effort;
+  if (id) article.dataset.id = id;
 
   const kicker = document.createElement("div");
   kicker.className = "note__kicker";
-  kicker.innerHTML = `<span>Bildirim</span><span class="note__weight">${effortLabel(effort)}</span>`;
+
+  const kind = document.createElement("span");
+  kind.textContent = "Bildirim";
+  const weight = document.createElement("span");
+  weight.className = "note__weight";
+  weight.textContent = effortLabel(effort);
+  kicker.append(kind, weight);
 
   const heading = document.createElement("h2");
   heading.className = "note__title";
@@ -58,36 +84,24 @@ function buildCard({ title, body, effort, closable }) {
     close.className = "note__close";
     close.setAttribute("aria-label", "Kapat");
     close.textContent = "×";
-    close.addEventListener("click", () => dismissNote(article));
     article.append(close);
   }
 
   return article;
 }
 
-function effortLabel(id) {
-  if (id === "light") return "tüy";
-  if (id === "heavy") return "ağır";
-  if (id === "massive") return "devasa";
-  return "normal";
-}
-
-function dismissNote(note) {
-  note.classList.add("is-leaving");
-  note.addEventListener("animationend", () => note.remove(), { once: true });
-}
-
-export function createScene({ character, lane, dock, stage }) {
-  const queue = [];
+export function createScene({ character, lane, stage, docks }) {
+  const jobs = [];
+  const toasts = new Map();
   let busy = false;
+  let seq = 0;
 
-  function setCharacterState(state, effort, profile) {
+  function setCharacterState(state, effort, profile, placement) {
     character.dataset.state = state;
     character.dataset.effort = effort;
     character.dataset.bothHands = String(Boolean(profile?.bothHands));
-    if (profile) {
-      character.style.setProperty("--walk-ms", `${profile.walkMs}ms`);
-    }
+    if (placement) character.dataset.face = placement.face;
+    if (profile) character.style.setProperty("--walk-ms", `${profile.walkMs}ms`);
   }
 
   function hideCharacter() {
@@ -95,42 +109,31 @@ export function createScene({ character, lane, dock, stage }) {
     character.style.removeProperty("--lean");
   }
 
-  async function playDelivery(payload) {
-    const profile = getProfile(payload.title, payload.body);
-    const reduced = prefersReducedMotion();
-
+  function mountWrap(placement, card) {
     const wrap = document.createElement("div");
     wrap.className = "delivery";
-    wrap.dataset.effort = profile.id;
-
-    const card = buildCard({
-      title: payload.title,
-      body: payload.body,
-      effort: profile.id,
-      closable: false,
-    });
-
-    wrap.append(character, card);
-    wrap.style.transform = `translateX(${lane.clientWidth + 24}px)`;
+    wrap.dataset.effort = card.dataset.effort;
+    wrap.dataset.pipSide = placement.pipSide;
+    wrap.style.visibility = "hidden";
+    if (placement.pipSide === "before") wrap.append(character, card);
+    else wrap.append(card, character);
     lane.append(wrap);
+    return wrap;
+  }
 
-    const travel = measureTravel(lane, wrap);
-    const grabX = travel.start - 80;
+  function revealWrap(wrap, point) {
+    setWrapPos(wrap, point);
+    wrap.style.visibility = "";
+  }
 
-    if (reduced) {
-      setCharacterState("idle", profile.id, profile);
-      wrap.style.transform = `translateX(${travel.end}px)`;
-      await wait(200);
-      settle(wrap, card, profile);
-      return;
-    }
+  function parkCharacter() {
+    lane.append(character);
+    hideCharacter();
+    stage.classList.remove("is-heave");
+  }
 
-    setCharacterState("enter", profile.id, profile);
-    await animateTransform(wrap, travel.start, grabX, profile.enterMs, "easeOut");
-
-    setCharacterState("grab", profile.id, profile);
-    await wait(profile.grabMs);
-
+  async function playPull({ wrap, from, to, profile, placement, stateWhenMoving, leanSign }) {
+    const sign = leanSign ?? placement.leanSign;
     let heaved = false;
 
     await animatePull({
@@ -138,9 +141,7 @@ export function createScene({ character, lane, dock, stage }) {
       onFrame(t) {
         const progress = sampleCurve(profile, t);
         const slope = pullSlope(profile, t);
-
-        const x = interpolate(grabX, travel.end, clamp(progress, 0, 1.12));
-        wrap.style.transform = `translateX(${x}px)`;
+        setWrapPos(wrap, lerpPoint(from, to, clamp(progress, 0, 1.12)));
 
         const hard = profile.id === "heavy" || profile.id === "massive";
         const slipping = hard && slope < -0.3;
@@ -151,13 +152,13 @@ export function createScene({ character, lane, dock, stage }) {
             ? profile.leanMax * 0.85
             : Math.min(profile.leanMax, 6 + Math.max(0, slope) * 8);
 
-        character.style.setProperty("--lean", `${-lean}deg`);
+        character.style.setProperty("--lean", `${sign * lean}deg`);
 
-        if (slipping) setCharacterState("slip", profile.id, profile);
+        if (slipping) setCharacterState("slip", profile.id, profile, placement);
         else if (resisting && t > 0.08 && t < 0.95) {
-          setCharacterState("strain", profile.id, profile);
+          setCharacterState("strain", profile.id, profile, placement);
         } else {
-          setCharacterState("pull", profile.id, profile);
+          setCharacterState(stateWhenMoving, profile.id, profile, placement);
         }
 
         if (!heaved && slipping) {
@@ -169,39 +170,93 @@ export function createScene({ character, lane, dock, stage }) {
       },
     });
 
-    wrap.style.transform = `translateX(${travel.end}px)`;
+    setWrapPos(wrap, to);
     character.style.setProperty("--lean", "0deg");
-    setCharacterState("release", profile.id, profile);
+  }
+
+  async function playDelivery(job) {
+    const placement = getPlacement(job.position);
+    const profile = getProfile(job.title, job.body);
+    const dock = docks[placement.id];
+    const reduced = prefersReducedMotion();
+
+    const card = buildCard({
+      id: job.id,
+      title: job.title,
+      body: job.body,
+      effort: profile.id,
+      closable: false,
+    });
+
+    const wrap = mountWrap(placement, card);
+    const spacer = insertSlot(dock, placement, Math.max(72, card.getBoundingClientRect().height));
+    const travel = measureTravel({ stage, wrap, card, slot: spacer, placement });
+    const grab = offsetAlong(travel.start, travel.end, 80);
+
+    if (reduced) {
+      revealWrap(wrap, travel.end);
+      settleToast(job, wrap, card, spacer, profile, placement);
+      return;
+    }
+
+    setCharacterState("enter", profile.id, profile, placement);
+    revealWrap(wrap, travel.start);
+    await animatePos(wrap, travel.start, grab, profile.enterMs);
+    setCharacterState("grab", profile.id, profile, placement);
+    await wait(profile.grabMs);
+
+    await playPull({
+      wrap,
+      from: grab,
+      to: travel.end,
+      profile,
+      placement,
+      stateWhenMoving: "pull",
+    });
+
+    setCharacterState("release", profile.id, profile, placement);
     await wait(profile.releaseMs);
 
     if (profile.exhaustedMs > 0) {
-      setCharacterState("exhausted", profile.id, profile);
+      setCharacterState("exhausted", profile.id, profile, placement);
       await wait(profile.exhaustedMs);
     }
 
-    setCharacterState("exit", profile.id, profile);
+    setCharacterState("exit", profile.id, profile, placement);
     await wait(profile.exitMs);
 
-    settle(wrap, card, profile);
+    settleToast(job, wrap, card, spacer, profile, placement);
   }
 
-  function settle(wrap, card, profile) {
+  function settleToast(job, wrap, card, spacer, profile, placement) {
     const parked = buildCard({
-      title: card.querySelector(".note__title")?.textContent ?? "",
-      body: card.querySelector(".note__body")?.textContent ?? "",
+      id: job.id,
+      title: job.title,
+      body: job.body,
       effort: profile.id,
       closable: true,
     });
-    dock.append(parked);
 
     const from = card.getBoundingClientRect();
+    spacer.replaceWith(parked);
     const to = parked.getBoundingClientRect();
     parked.style.transform = `translate(${from.left - to.left}px, ${from.top - to.top}px)`;
 
-    lane.append(character);
     wrap.remove();
-    hideCharacter();
-    stage.classList.remove("is-heave");
+    parkCharacter();
+
+    const toast = {
+      id: job.id,
+      title: job.title,
+      body: job.body,
+      profile,
+      placement,
+      el: parked,
+      durationMs: job.durationMs,
+      timer: 0,
+      closing: false,
+    };
+    toasts.set(job.id, toast);
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -209,25 +264,119 @@ export function createScene({ character, lane, dock, stage }) {
         parked.style.transform = "none";
       });
     });
+
+    if (toast.durationMs > 0) {
+      toast.timer = window.setTimeout(() => {
+        requestDismiss(job.id);
+      }, toast.durationMs);
+    }
+  }
+
+  async function playDismiss(job) {
+    const toast = toasts.get(job.id);
+    if (!toast?.el) {
+      toasts.delete(job.id);
+      return;
+    }
+
+    window.clearTimeout(toast.timer);
+    toast.closing = true;
+
+    const { profile, placement, el } = toast;
+    const reduced = prefersReducedMotion();
+
+    const spacer = document.createElement("div");
+    spacer.className = "note note--spacer";
+    spacer.style.height = `${el.offsetHeight}px`;
+    el.replaceWith(spacer);
+
+    const card = buildCard({
+      id: toast.id,
+      title: toast.title,
+      body: toast.body,
+      effort: profile.id,
+      closable: false,
+    });
+    const wrap = mountWrap(placement, card);
+
+    const travel = measureTravel({ stage, wrap, card, slot: spacer, placement });
+
+    if (reduced) {
+      wrap.remove();
+      spacer.remove();
+      parkCharacter();
+      toasts.delete(job.id);
+      return;
+    }
+
+    setCharacterState("enter", profile.id, profile, placement);
+    revealWrap(wrap, travel.end);
+    await wait(Math.max(280, profile.enterMs * 0.65));
+    setCharacterState("grab", profile.id, profile, placement);
+    await wait(profile.grabMs);
+
+    await playPull({
+      wrap,
+      from: travel.end,
+      to: travel.start,
+      profile,
+      placement,
+      stateWhenMoving: "drag",
+      leanSign: -placement.leanSign,
+    });
+
+    setCharacterState("exit", profile.id, profile, placement);
+    await wait(profile.exitMs);
+
+    wrap.remove();
+    spacer.remove();
+    parkCharacter();
+    toasts.delete(job.id);
   }
 
   async function drain() {
     busy = true;
-    while (queue.length > 0) {
-      const next = queue.shift();
-      await playDelivery(next);
+    while (jobs.length > 0) {
+      const next = jobs.shift();
+      if (next.kind === "deliver") await playDelivery(next);
+      else await playDismiss(next);
     }
     busy = false;
   }
 
+  function pump() {
+    if (!busy) drain();
+  }
+
+  function requestDismiss(id) {
+    const toast = toasts.get(id);
+    if (!toast || toast.closing) return;
+    toast.closing = true;
+    window.clearTimeout(toast.timer);
+    jobs.push({ kind: "dismiss", id });
+    pump();
+  }
+
+  stage.addEventListener("click", (event) => {
+    const close = event.target.closest(".note__close");
+    if (!close) return;
+    const note = close.closest(".note");
+    if (note?.dataset.id) requestDismiss(note.dataset.id);
+  });
+
   return {
-    enqueue(payload) {
-      queue.push({
-        title: payload.title.trim(),
-        body: payload.body.trim(),
+    enqueue({ title, body, position, durationMs }) {
+      jobs.push({
+        kind: "deliver",
+        id: `toast-${++seq}`,
+        title: title.trim(),
+        body: body.trim(),
+        position: parsePosition(position),
+        durationMs: Number.isFinite(durationMs) ? Math.max(0, durationMs) : 5000,
       });
-      if (!busy) drain();
+      pump();
     },
+    dismiss: requestDismiss,
   };
 }
 
@@ -235,22 +384,13 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function measureTravel(lane, wrap) {
-  const laneWidth = lane.clientWidth;
-  const wrapWidth = wrap.getBoundingClientRect().width;
-  const start = laneWidth + 24;
-  const end = laneWidth - wrapWidth;
-  return { start, end };
-}
-
-function animateTransform(el, from, to, duration, easeName) {
-  const ease = easeName === "easeOut" ? (t) => 1 - (1 - t) ** 3 : (t) => t;
+function animatePos(el, from, to, duration) {
   return new Promise((resolve) => {
     const start = performance.now();
+    setWrapPos(el, from);
     const tick = (now) => {
       const t = Math.min(1, (now - start) / duration);
-      const x = interpolate(from, to, ease(t));
-      el.style.transform = `translateX(${x}px)`;
+      setWrapPos(el, lerpPoint(from, to, easeOutCubic(t)));
       if (t < 1) requestAnimationFrame(tick);
       else resolve();
     };

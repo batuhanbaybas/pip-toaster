@@ -115,6 +115,39 @@ body {
   color: var(--accent-2);
 }
 
+.field-hint {
+  margin: -8px 0 16px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.placement {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 34px);
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-2);
+}
+
+.placement__cell {
+  border: 0;
+  border-radius: 8px;
+  background: #12141c;
+  cursor: pointer;
+}
+
+.placement__cell:hover {
+  background: #2a3144;
+}
+
+.placement__cell.is-active {
+  background: var(--accent);
+}
+
 .presets {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -168,7 +201,7 @@ body {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(1200px 500px at 80% 120%, rgba(61, 122, 120, 0.18), transparent 60%),
+    radial-gradient(1200px 500px at 50% 110%, rgba(61, 122, 120, 0.16), transparent 60%),
     var(--bg);
 }
 
@@ -181,40 +214,57 @@ body {
   pointer-events: none;
 }
 
-.ground {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 118px;
-  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.28) 40%, #0d0f16 100%);
-  border-top: 1px solid rgba(243, 238, 230, 0.06);
-}
+/* ——— Toaster docks ——— */
 
-.ground::before {
-  content: "";
+.toaster-layer {
   position: absolute;
-  right: 24px;
-  bottom: 86px;
-  left: 24px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(243, 238, 230, 0.12), transparent);
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
 }
-
-/* ——— Dock (settled cards) ——— */
 
 .dock {
   position: absolute;
-  right: 28px;
-  bottom: 132px;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   gap: 10px;
   width: var(--dock-width);
-  max-height: calc(100vh - 200px);
-  overflow: auto;
-  pointer-events: none;
-  z-index: 2;
+  max-height: calc(100% - 48px);
+}
+
+.dock[data-position="top-left"] {
+  top: 24px;
+  left: 24px;
+}
+
+.dock[data-position="top-center"] {
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dock[data-position="top-right"] {
+  top: 24px;
+  right: 24px;
+}
+
+.dock[data-position="bottom-left"] {
+  bottom: 24px;
+  left: 24px;
+  justify-content: flex-end;
+}
+
+.dock[data-position="bottom-center"] {
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  justify-content: flex-end;
+}
+
+.dock[data-position="bottom-right"] {
+  bottom: 24px;
+  right: 24px;
+  justify-content: flex-end;
 }
 
 .note {
@@ -296,6 +346,15 @@ body {
   animation: note-leave 320ms ease-in forwards;
 }
 
+.note--spacer {
+  visibility: hidden;
+  pointer-events: none;
+  max-height: none;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 @keyframes note-leave {
   to {
     opacity: 0;
@@ -307,17 +366,15 @@ body {
 
 .lane {
   position: absolute;
-  right: 28px;
-  bottom: 28px;
-  left: 0;
-  height: 110px;
+  inset: 0;
   z-index: 3;
+  pointer-events: none;
 }
 
 .delivery {
   position: absolute;
   left: 0;
-  bottom: 0;
+  top: 0;
   display: flex;
   align-items: flex-end;
   gap: var(--grab-gap);
@@ -349,8 +406,9 @@ body {
   box-shadow: 1px 1px 0 rgba(44, 36, 28, 0.12);
 }
 
-.delivery__card .note__close {
-  display: none;
+.delivery[data-pip-side="after"] .delivery__card::before {
+  left: auto;
+  right: -3px;
 }
 
 .delivery[data-effort="massive"] .delivery__card,
@@ -367,6 +425,7 @@ body {
 .character {
   --lean: 0deg;
   --bob: 0px;
+  --face: 1;
   position: relative;
   width: var(--char-w);
   height: 96px;
@@ -374,6 +433,10 @@ body {
   transform: translateY(var(--bob)) rotate(var(--lean));
   transform-origin: 50% 100%;
   transition: opacity 220ms ease;
+}
+
+.character[data-face="-1"] {
+  --face: -1;
 }
 
 .character[data-state="hidden"] {
@@ -400,6 +463,7 @@ body {
 .character__figure {
   position: absolute;
   inset: 0 8px 8px;
+  transform: scaleX(var(--face));
 }
 
 .character__leg {
@@ -608,19 +672,22 @@ body {
 
 .character[data-state="enter"] .character__leg--left,
 .character[data-state="exit"] .character__leg--left,
-.character[data-state="pull"] .character__leg--left {
+.character[data-state="pull"] .character__leg--left,
+.character[data-state="drag"] .character__leg--left {
   animation: step-a var(--walk-ms, 360ms) infinite ease-in-out;
 }
 
 .character[data-state="enter"] .character__leg--right,
 .character[data-state="exit"] .character__leg--right,
-.character[data-state="pull"] .character__leg--right {
+.character[data-state="pull"] .character__leg--right,
+.character[data-state="drag"] .character__leg--right {
   animation: step-b var(--walk-ms, 360ms) infinite ease-in-out;
 }
 
 .character[data-state="enter"] .character__figure,
 .character[data-state="exit"] .character__figure,
-.character[data-state="pull"] .character__figure {
+.character[data-state="pull"] .character__figure,
+.character[data-state="drag"] .character__figure {
   animation: walk-bob var(--walk-ms, 360ms) infinite ease-in-out;
 }
 
@@ -633,12 +700,14 @@ body {
 }
 
 .character[data-state="pull"] .character__arm--front,
+.character[data-state="drag"] .character__arm--front,
 .character[data-state="strain"] .character__arm--front,
 .character[data-state="slip"] .character__arm--front {
   transform: rotate(-78deg);
 }
 
 .character[data-both-hands="true"][data-state="pull"] .character__arm--back,
+.character[data-both-hands="true"][data-state="drag"] .character__arm--back,
 .character[data-both-hands="true"][data-state="strain"] .character__arm--back,
 .character[data-both-hands="true"][data-state="slip"] .character__arm--back,
 .character[data-both-hands="true"][data-state="grab"] .character__arm--back {
@@ -748,7 +817,8 @@ body {
 }
 
 .character[data-effort="light"][data-state="enter"] .character__figure,
-.character[data-effort="light"][data-state="pull"] .character__figure {
+.character[data-effort="light"][data-state="pull"] .character__figure,
+.character[data-effort="light"][data-state="drag"] .character__figure {
   animation-duration: 240ms;
 }
 
@@ -780,10 +850,10 @@ body {
 @keyframes walk-bob {
   0%,
   100% {
-    transform: translateY(0);
+    transform: scaleX(var(--face)) translateY(0);
   }
   50% {
-    transform: translateY(3px);
+    transform: scaleX(var(--face)) translateY(3px);
   }
 }
 

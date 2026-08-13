@@ -18,8 +18,8 @@
         <p class="composer__kicker">v1 · HTML + CSS + JS</p>
         <h1 class="composer__title">Karakter bildirimi getirir.</h1>
         <p class="composer__lead">
-          3D yok. Asıl olay: Pip, bildirimi fiziksel olarak çekiyor. Metin
-          uzadıkça bildirim ağırlaşıyor; Pip zorlanıyor, kayıyor, eğiliyor.
+          Bildirim bir toaster gibi seçtiğin köşede durur. Pip oraya göre
+          gelir, ağırlığına göre sürükler; kapanırken de geri gelip götürür.
         </p>
 
         <label class="field">
@@ -40,6 +40,24 @@
 
         <p class="effort-preview" id="effort-preview" aria-live="polite"></p>
 
+        <div class="field">
+          <span>Konum</span>
+          <div class="placement" role="group" aria-label="Toaster konumu">
+            <button type="button" class="placement__cell" data-position="top-left" aria-label="Sol üst"></button>
+            <button type="button" class="placement__cell" data-position="top-center" aria-label="Orta üst"></button>
+            <button type="button" class="placement__cell" data-position="top-right" aria-label="Sağ üst"></button>
+            <button type="button" class="placement__cell" data-position="bottom-left" aria-label="Sol alt"></button>
+            <button type="button" class="placement__cell" data-position="bottom-center" aria-label="Orta alt"></button>
+            <button type="button" class="placement__cell is-active" data-position="bottom-right" aria-label="Sağ alt"></button>
+          </div>
+        </div>
+
+        <label class="field">
+          <span>Otomatik kapanış (sn)</span>
+          <input id="duration-input" type="number" min="0" max="30" step="1" value="5" />
+        </label>
+        <p class="field-hint">0 yazarsan sadece × ile kapanır — Pip yine gelip alır.</p>
+
         <div class="presets" role="group" aria-label="Hazır uzunluklar">
           <button type="button" class="preset" data-preset="light">Kısa</button>
           <button type="button" class="preset" data-preset="normal">Orta</button>
@@ -56,9 +74,15 @@
 
       <main class="stage" id="stage">
         <div class="stage__glow" aria-hidden="true"></div>
-        <div class="ground" aria-hidden="true"></div>
 
-        <div class="dock" id="dock" aria-live="polite"></div>
+        <div class="toaster-layer" aria-live="polite">
+          <div class="dock" data-position="top-left"></div>
+          <div class="dock" data-position="top-center"></div>
+          <div class="dock" data-position="top-right"></div>
+          <div class="dock" data-position="bottom-left"></div>
+          <div class="dock" data-position="bottom-center"></div>
+          <div class="dock" data-position="bottom-right"></div>
+        </div>
 
         <div class="lane" id="lane">
           <div
