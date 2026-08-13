@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -31,102 +31,103 @@
         <a class="is-active" href="./playground.html">Playground</a>
         <a
           class="nav__cta"
-          href="https://github.com/batuhanbaybas/charecter-notification"
+          href="https://github.com/batuhanbaybas/pip-toaster"
           >GitHub</a
         >
       </nav>
     </header>
 
     <div class="app">
-      <aside class="composer" aria-label="Bildirim oluştur">
+      <aside class="composer" aria-label="Compose a toast">
         <p class="composer__kicker">npm · pip-toaster</p>
-        <h1 class="composer__title">Karakter bildirimi getirir.</h1>
+        <h1 class="composer__title">A character delivers the toast.</h1>
         <p class="composer__lead">
-          Bildirim bir toaster gibi seçtiğin köşede durur. Pip oraya göre
-          gelir, ağırlığına göre sürükler; kapanırken de geri gelip götürür.
+          The card parks in a toaster dock at the corner you pick. Pip arrives
+          from that edge, carries it by weight, then comes back and pushes it
+          out when it dismisses.
         </p>
 
         <label class="field">
-          <span>Başlık</span>
+          <span>Title</span>
           <input
             id="title-input"
             type="text"
             maxlength="80"
-            placeholder="örn. Yeni mesaj"
-            value="Toplantı hatırlatması"
+            placeholder="e.g. New message"
+            value="Meeting reminder"
           />
         </label>
 
         <label class="field">
-          <span>Mesaj</span>
-          <textarea id="body-input" rows="5" placeholder="Bildirim metnini yaz…">Tasarım incelemesi 10 dakika içinde başlıyor.</textarea>
+          <span>Message</span>
+          <textarea id="body-input" rows="5" placeholder="Write the toast copy…">Design review starts in 10 minutes.</textarea>
         </label>
 
         <p class="effort-preview" id="effort-preview" aria-live="polite"></p>
 
         <div class="field">
-          <span>Konum</span>
-          <div class="placement" role="group" aria-label="Toaster konumu">
-            <button type="button" class="placement__cell" data-position="top-left" aria-label="Sol üst"></button>
-            <button type="button" class="placement__cell" data-position="top-center" aria-label="Orta üst"></button>
-            <button type="button" class="placement__cell" data-position="top-right" aria-label="Sağ üst"></button>
-            <button type="button" class="placement__cell" data-position="bottom-left" aria-label="Sol alt"></button>
-            <button type="button" class="placement__cell" data-position="bottom-center" aria-label="Orta alt"></button>
-            <button type="button" class="placement__cell is-active" data-position="bottom-right" aria-label="Sağ alt"></button>
+          <span>Position</span>
+          <div class="placement" role="group" aria-label="Toaster position">
+            <button type="button" class="placement__cell" data-position="top-left" aria-label="top-left"></button>
+            <button type="button" class="placement__cell" data-position="top-center" aria-label="top-center"></button>
+            <button type="button" class="placement__cell" data-position="top-right" aria-label="top-right"></button>
+            <button type="button" class="placement__cell" data-position="bottom-left" aria-label="bottom-left"></button>
+            <button type="button" class="placement__cell" data-position="bottom-center" aria-label="bottom-center"></button>
+            <button type="button" class="placement__cell is-active" data-position="bottom-right" aria-label="bottom-right"></button>
           </div>
         </div>
 
         <div class="field">
-          <span>Durum</span>
-          <div class="statuses" role="group" aria-label="Bildirim durumu">
-            <button type="button" class="preset is-active" data-status="default">Normal</button>
-            <button type="button" class="preset" data-status="info">Bilgi</button>
-            <button type="button" class="preset" data-status="success">Başarı</button>
-            <button type="button" class="preset" data-status="warning">Uyarı</button>
-            <button type="button" class="preset" data-status="error">Hata</button>
+          <span>Status</span>
+          <div class="statuses" role="group" aria-label="Toast status">
+            <button type="button" class="preset is-active" data-status="default">Default</button>
+            <button type="button" class="preset" data-status="info">Info</button>
+            <button type="button" class="preset" data-status="success">Success</button>
+            <button type="button" class="preset" data-status="warning">Warning</button>
+            <button type="button" class="preset" data-status="error">Error</button>
           </div>
         </div>
 
         <label class="field">
-          <span>Otomatik kapanış (sn)</span>
+          <span>Auto-dismiss (sec)</span>
           <input id="duration-input" type="number" min="0" max="30" step="1" value="5" />
         </label>
-        <p class="field-hint">0 yazarsan Pip yanında bekler, kitap okur. × deyince kitabı kapatıp kartı götürür.</p>
+        <p class="field-hint">Set 0 and Pip sits beside the card and reads. Hit × and he closes the book, then carries it out.</p>
 
         <label class="check">
           <input id="action-toggle" type="checkbox" />
-          <span>Aksiyon butonları ekle</span>
+          <span>Add action buttons</span>
         </label>
 
         <div class="field">
-          <span>Kart rengi</span>
+          <span>Card color</span>
           <div class="swatches">
             <label class="swatch">
               <input id="card-bg" type="color" value="#f7f1e6" />
-              Zemin
+              Background
             </label>
             <label class="swatch">
               <input id="card-color" type="color" value="#2c241c" />
-              Yazı
+              Text
             </label>
             <label class="swatch">
               <input id="card-accent" type="color" value="#e07a5f" />
-              Vurgu
+              Accent
             </label>
           </div>
         </div>
 
-        <div class="presets" role="group" aria-label="Hazır uzunluklar">
-          <button type="button" class="preset" data-preset="light">Kısa</button>
-          <button type="button" class="preset" data-preset="normal">Orta</button>
-          <button type="button" class="preset" data-preset="heavy">Uzun</button>
+        <div class="presets" role="group" aria-label="Length presets">
+          <button type="button" class="preset" data-preset="light">Short</button>
+          <button type="button" class="preset" data-preset="normal">Medium</button>
+          <button type="button" class="preset" data-preset="heavy">Long</button>
           <button type="button" class="preset" data-preset="massive">
-            Devasa
+            Massive
           </button>
         </div>
 
         <button type="button" class="send" id="send-btn">
-          Pip’i gönder
+          Send Pip
         </button>
       </aside>
 

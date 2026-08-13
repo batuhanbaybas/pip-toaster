@@ -6,12 +6,12 @@
   "author": "Batuhan Baybaş <b.baybas@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/batuhanbaybas/charecter-notification.git"
+    "url": "git+https://github.com/batuhanbaybas/pip-toaster.git"
   },
   "bugs": {
-    "url": "https://github.com/batuhanbaybas/charecter-notification/issues"
+    "url": "https://github.com/batuhanbaybas/pip-toaster/issues"
   },
-  "homepage": "https://batuhanbaybas.github.io/charecter-notification/",
+  "homepage": "https://batuhanbaybas.github.io/pip-toaster/",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

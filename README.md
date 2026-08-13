@@ -2,7 +2,7 @@
 
 Toast notifications delivered by a small character. Pip pulls the card in from the nearest edge, parks it in a toaster dock, then comes back and pushes it out when it dismisses.
 
-**[Documentation](https://batuhanbaybas.github.io/charecter-notification/)** · **[Playground](https://batuhanbaybas.github.io/charecter-notification/playground.html)**
+**[Documentation](https://batuhanbaybas.github.io/pip-toaster/)** · **[Playground](https://batuhanbaybas.github.io/pip-toaster/playground.html)**
 
 Weight comes from content length: short copy is a sprint, a wall of text is a struggle (lean, slips, two Pips on top/bottom).
 
@@ -60,7 +60,7 @@ toast.dismissAll();
 
 `title` and `message` are the card copy (`body` / `description` still work as aliases of `message`). `status` is `default` · `info` · `success` · `warning` · `error` — Pip’s shirt and the card accent follow it (`toast.success()` / `.warning()` / `.error()` / `.info()` are shortcuts). `action` renders footer buttons. `content` is a slot for your own nodes (buttons, links, anything `Node`). Host CSS does not pierce the Shadow DOM — unstyled `button` / `a` inside `content` pick up the toast styles, or pass a factory so listeners survive the carry animation.
 
-Full payload, `createToaster`, labels, and card colors: [API docs](https://batuhanbaybas.github.io/charecter-notification/#api).
+Full payload, `createToaster`, labels, and card colors: [API docs](https://batuhanbaybas.github.io/pip-toaster/#api).
 
 ### Isolated instance
 
@@ -119,7 +119,7 @@ Then open http://localhost:5173 for the docs site and http://localhost:5173/play
 
 The site deploys from `.github/workflows/pages.yml` on push to `master`.
 
-One-time: **Settings → Pages → Source → GitHub Actions**. After the workflow runs, the site is at `https://batuhanbaybas.github.io/charecter-notification/`.
+One-time: **Settings → Pages → Source → GitHub Actions**. After the workflow runs, the site is at `https://batuhanbaybas.github.io/pip-toaster/`.
 
 ## Publish
 

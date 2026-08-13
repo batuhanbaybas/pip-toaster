@@ -92,6 +92,16 @@
   font-family: Outfit, system-ui, sans-serif;
 }
 
+.docs *,
+.docs *::before,
+.docs *::after {
+  box-sizing: border-box;
+}
+
+html:has(.docs) {
+  scroll-behavior: smooth;
+}
+
 .docs .wrap a:not(.btn),
 .docs .site-footer a {
   color: var(--accent-2);
@@ -238,6 +248,7 @@
 
 .section {
   padding: 8px 0 72px;
+  scroll-margin-top: calc(var(--nav-h) + 12px);
 }
 
 .section h2 {
@@ -409,7 +420,7 @@
   line-height: 1.45;
 }
 
-.positions {
+.docs .positions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 44px);
@@ -421,7 +432,7 @@
   background: var(--bg-2);
 }
 
-.positions button {
+.docs .positions button {
   border: 0;
   border-radius: 8px;
   background: #12141c;
@@ -429,15 +440,15 @@
   cursor: pointer;
 }
 
-.positions button:hover {
+.docs .positions button:hover {
   background: #2a3144;
 }
 
-.positions button.is-active {
+.docs .positions button.is-active {
   background: var(--accent);
 }
 
-.statuses {
+.docs .statuses {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;

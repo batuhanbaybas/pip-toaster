@@ -31,7 +31,7 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p _site/demo _site/dist
-          cp index.html playground.html _site/
+          cp index.html playground.html 404.html _site/
           cp demo/favicon.svg demo/site.css demo/docs.js demo/demo.css demo/demo.js _site/demo/
           cp -R dist/. _site/dist/
           touch _site/.nojekyll
