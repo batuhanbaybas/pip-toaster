@@ -1,5 +1,6 @@
 import { getProfile, sampleCurve } from "./effort.js";
 import {
+  crewSize,
   getPlacement,
   insertSlot,
   lerpPoint,
@@ -97,19 +98,36 @@ export function createScene({ character, lane, stage, docks }) {
   let busy = false;
   let seq = 0;
 
+  let activeWrap = null;
+
+  function crewOf(wrap) {
+    if (!wrap) return [character];
+    const pips = [...wrap.querySelectorAll(".character")];
+    return pips.length > 0 ? pips : [character];
+  }
+
   function setCharacterState(state, effort, profile, layout) {
-    character.dataset.state = state;
-    character.dataset.effort = effort;
-    character.dataset.bothHands = String(
-      layout?.axis === "y" || layout?.mode === "push" || Boolean(profile?.bothHands),
-    );
-    if (layout) {
-      character.dataset.face = layout.face;
-      character.dataset.axis = layout.axis ?? "x";
-      character.dataset.push =
-        layout.axis === "y" || layout.mode === "push" ? layout.direction : "";
-    }
-    if (profile) character.style.setProperty("--walk-ms", `${profile.walkMs}ms`);
+    const crew = crewOf(activeWrap);
+    const dual = crew.length > 1;
+    crew.forEach((pip, index) => {
+      pip.dataset.state = state;
+      pip.dataset.effort = effort;
+      pip.dataset.bothHands = String(
+        dual || layout?.axis === "y" || layout?.mode === "push" || Boolean(profile?.bothHands),
+      );
+      if (layout) {
+        pip.dataset.axis = layout.axis ?? "x";
+        if (dual) {
+          pip.dataset.face = index === 0 ? "1" : "-1";
+          pip.dataset.push = index === 0 ? "right" : "left";
+        } else {
+          pip.dataset.face = layout.face;
+          pip.dataset.push =
+            layout.axis === "y" || layout.mode === "push" ? layout.direction : "";
+        }
+      }
+      if (profile) pip.style.setProperty("--walk-ms", `${profile.walkMs}ms`);
+    });
   }
 
   function hideCharacter() {
@@ -118,17 +136,31 @@ export function createScene({ character, lane, stage, docks }) {
     character.style.removeProperty("--lean");
   }
 
-  function mountWrap(layout, card) {
+  function mountWrap(layout, card, profile) {
     const wrap = document.createElement("div");
+    const crew = crewSize(layout, profile.id);
     wrap.className = "delivery";
     wrap.dataset.effort = card.dataset.effort;
     wrap.dataset.pipSide = layout.pipSide;
     wrap.dataset.axis = layout.axis ?? "x";
     wrap.dataset.dir = layout.direction ?? layout.from;
+    wrap.dataset.edge = layout.from;
+    wrap.dataset.crew = String(crew);
     wrap.style.visibility = "hidden";
-    if (layout.pipSide === "before") wrap.append(character, card);
-    else wrap.append(card, character);
+
+    if (crew === 2) {
+      const mate = character.cloneNode(true);
+      mate.removeAttribute("id");
+      mate.dataset.role = "mate";
+      wrap.append(character, card, mate);
+    } else if (layout.pipSide === "before") {
+      wrap.append(character, card);
+    } else {
+      wrap.append(card, character);
+    }
+
     lane.append(wrap);
+    activeWrap = wrap;
     return wrap;
   }
 
@@ -138,8 +170,10 @@ export function createScene({ character, lane, stage, docks }) {
   }
 
   function parkCharacter() {
+    lane.querySelectorAll('.character[data-role="mate"]').forEach((el) => el.remove());
     lane.append(character);
     hideCharacter();
+    activeWrap = null;
     stage.classList.remove("is-heave");
   }
 
@@ -163,7 +197,12 @@ export function createScene({ character, lane, stage, docks }) {
             ? profile.leanMax * 0.85
             : Math.min(profile.leanMax, 6 + Math.max(0, slope) * 8);
 
-        character.style.setProperty("--lean", `${sign * lean}deg`);
+        const crew = crewOf(wrap);
+        crew.forEach((pip, index) => {
+          const leanDeg =
+            crew.length > 1 ? (index === 0 ? lean : -lean) : sign * lean;
+          pip.style.setProperty("--lean", `${leanDeg}deg`);
+        });
 
         if (slipping) setCharacterState("slip", profile.id, profile, placement);
         else if (resisting && t > 0.08 && t < 0.95) {
@@ -182,7 +221,9 @@ export function createScene({ character, lane, stage, docks }) {
     });
 
     setWrapPos(wrap, to);
-    character.style.setProperty("--lean", "0deg");
+    crewOf(wrap).forEach((pip) => {
+      pip.style.setProperty("--lean", "0deg");
+    });
   }
 
   async function playDelivery(job) {
@@ -200,7 +241,7 @@ export function createScene({ character, lane, stage, docks }) {
     });
 
     const layout = withMode(placement, "pull");
-    const wrap = mountWrap(layout, card);
+    const wrap = mountWrap(layout, card, profile);
     const spacer = insertSlot(dock, placement, Math.max(72, card.getBoundingClientRect().height));
     const travel = measureTravel({ stage, wrap, card, slot: spacer, placement: layout });
     const grab = offsetAlong(travel.start, travel.end, 80);
@@ -310,7 +351,7 @@ export function createScene({ character, lane, stage, docks }) {
       closable: false,
     });
     const layout = withMode(placement, "push");
-    const wrap = mountWrap(layout, card);
+    const wrap = mountWrap(layout, card, profile);
 
     const travel = measureTravel({ stage, wrap, card, slot: spacer, placement: layout });
 

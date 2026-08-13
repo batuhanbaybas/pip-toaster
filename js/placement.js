@@ -1,7 +1,7 @@
 /**
- * Toaster placement. Pull (enter) and push (exit) layouts are derived
- * from the dock. Left/right: Pip stands beside the card. Top/bottom:
- * Pip gets under it (lift) or on top of it (press).
+ * Toaster placement. Left/right: Pip stands beside the card.
+ * Top/bottom: Pip flanks the card (two Pips when the load is huge)
+ * so they are not clipped off-screen above/below the toaster.
  */
 
 export const POSITIONS = [
@@ -54,6 +54,12 @@ export function getPlacement(position) {
       leanSign: edge === "right" || edge === "bottom" ? 1 : -1,
     },
   };
+}
+
+/** Vertical travel still flanks the card so Pip stays on-screen. Huge cards get two Pips. */
+export function crewSize(layout, effortId) {
+  if (layout.axis !== "y") return 1;
+  return effortId === "heavy" || effortId === "massive" ? 2 : 1;
 }
 
 /** Merge pull or push fields onto the placement for a single acting layout. */
