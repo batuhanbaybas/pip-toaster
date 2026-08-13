@@ -4,6 +4,8 @@ Toast notifications delivered by a small character. Pip pulls the card in from t
 
 **[Documentation](https://batuhanbaybas.github.io/pip-toaster/)** · **[Playground](https://batuhanbaybas.github.io/pip-toaster/playground.html)**
 
+> **Experimental.** This library has not been tested at enterprise scale and is not recommended for production use.
+
 Weight comes from content length: short copy is a sprint, a wall of text is a struggle (lean, slips, two Pips on top/bottom).
 
 No framework. Styles are injected into a Shadow DOM overlay so host-app CSS does not collide.
