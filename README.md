@@ -1,4 +1,4 @@
-# character-notification
+# pip-toast
 
 Toast notifications delivered by a small character. Pip pulls the card in from the nearest edge, parks it in a toaster dock, then comes back and pushes it out when it dismisses.
 
@@ -11,13 +11,13 @@ The published package is compiled ESM plus generated `.d.ts`. Source lives in Ty
 ## Install
 
 ```bash
-npm install character-notification
+npm install pip-toast
 ```
 
 ## Usage
 
 ```ts
-import { toast } from "character-notification";
+import { toast } from "pip-toast";
 
 toast("Meeting in 10 minutes.");
 
@@ -63,7 +63,7 @@ toast.dismissAll();
 Use `createToaster` when you need a second stack, a custom mount node, or different card copy.
 
 ```ts
-import { createToaster } from "character-notification";
+import { createToaster } from "pip-toast";
 
 const notify = createToaster({
   position: "bottom-left",
@@ -114,5 +114,3 @@ Then open http://localhost:5173. `npm run build` compiles `src/` → `dist/` (th
 ```bash
 npm publish --access public
 ```
-
-If the name `character-notification` is taken, change `"name"` in `package.json` (scoped names like `@you/character-notification` work well).

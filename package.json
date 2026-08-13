@@ -1,5 +1,5 @@
 {
-  "name": "character-notification",
+  "name": "pip-toaster",
   "version": "0.1.0",
   "description": "Toast notifications delivered by a character who pulls them in and pushes them out.",
   "license": "MIT",

@@ -1,4 +1,4 @@
-/* character-notification — scoped inside Shadow DOM (:host) */
+/* pip-toaster — scoped inside Shadow DOM (:host) */
 :host {
   --_font: ui-sans-serif, system-ui, sans-serif;
   --_accent: var(--toast-accent, #e07a5f);
@@ -51,7 +51,7 @@
   box-sizing: border-box;
 }
 
-.pip-toast {
+.pip-toaster {
   position: absolute;
   inset: 0;
   overflow: visible;

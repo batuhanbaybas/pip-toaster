@@ -42,7 +42,7 @@ export function mountHost({ target, zIndex, card }: MountHostOptions = {}): Toas
   const contained = mountAt !== document.body;
 
   const host = document.createElement("div");
-  host.className = "pip-toast-host";
+  host.className = "pip-toaster-host";
   host.style.cssText = [
     `position:${contained ? "absolute" : "fixed"}`,
     "inset:0",
@@ -68,7 +68,7 @@ export function mountHost({ target, zIndex, card }: MountHostOptions = {}): Toas
   });
 
   const root = document.createElement("div");
-  root.className = "pip-toast";
+  root.className = "pip-toaster";
   root.setAttribute("aria-live", "polite");
 
   const toasterLayer = document.createElement("div");
