@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "description": "Toast notifications delivered by a character who pulls them in and pushes them out.",
   "license": "MIT",
+  "author": "Batuhan Baybaş <b.baybas@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/batuhanbaybas/charecter-notification.git"
+  },
+  "bugs": {
+    "url": "https://github.com/batuhanbaybas/charecter-notification/issues"
+  },
+  "homepage": "https://github.com/batuhanbaybas/charecter-notification#readme",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -28,7 +37,7 @@
     "character"
   ],
   "scripts": {
-    "build": "tsc && cp src/styles.css dist/styles.css",
+    "build": "rm -rf dist && tsc && cp src/styles.css dist/styles.css",
     "dev": "npm run build && python3 -m http.server 5173",
     "prepublishOnly": "npm run build"
   },

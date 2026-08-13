@@ -54,7 +54,7 @@ toast.dismiss(id);
 toast.dismissAll();
 ```
 
-`toast()` returns an id. `duration: 0` stays until the close button — Pip still walks over and hauls it off.
+`toast()` returns an id. `duration: 0` stays until dismissed — Pip sits beside the card and reads until you hit ×.
 
 `title` and `message` are the card copy (`body` / `description` still work as aliases of `message`). `status` is `default` · `info` · `success` · `warning` · `error` — Pip’s shirt and the card accent follow it (`toast.success()` / `.warning()` / `.error()` / `.info()` are shortcuts). `action` renders footer buttons. `content` is a slot for your own nodes (buttons, links, anything `Node`). Host CSS does not pierce the Shadow DOM — unstyled `button` / `a` inside `content` pick up the toast styles, or pass a factory so listeners survive the carry animation.
 
@@ -80,7 +80,7 @@ If `target` is omitted, the overlay is `position: fixed` on `document.body` and 
 
 ### Card colors
 
-Pip stays as-is. Only the toast card is recolorable:
+Only the toast card is recolorable. Pip’s shirt still follows `status` (teal / blue / green / amber / red); hat and skin stay as they are.
 
 ```ts
 toast.configure({
@@ -92,7 +92,7 @@ toast.configure({
 });
 ```
 
-Or set `--toast-bg`, `--toast-color`, `--toast-accent` on `.pip-toast-host`.
+`accent` is the default-status highlight. `info` / `success` / `warning` / `error` keep their own accent. Or set `--toast-bg`, `--toast-color`, `--toast-accent` on `.pip-toast-host`.
 
 ## Positions
 
