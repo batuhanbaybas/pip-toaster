@@ -22,6 +22,10 @@ export function createCharacter(): HTMLElement {
         <div class="character__arm character__arm--front">
           <span class="character__hand"></span>
         </div>
+        <div class="character__book" aria-hidden="true">
+          <span class="character__book-cover"></span>
+          <span class="character__book-page"></span>
+        </div>
         <div class="character__head">
           <div class="character__hat"></div>
           <div class="character__face">

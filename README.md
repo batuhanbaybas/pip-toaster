@@ -55,38 +55,21 @@ notify.destroy();
 
 If `target` is omitted, the overlay is `position: fixed` on `document.body` and covers the viewport.
 
-### Theme
+### Card colors
 
-Pip, the card, and the dock are CSS custom properties (`--cn-*`) on the overlay host. Pass them as a typed `theme` object, or set the variables in your own CSS on `.pip-toast-host`.
+Pip stays as-is. Only the toast card is recolorable:
 
 ```ts
 toast.configure({
-  theme: {
-    pipSkin: "#f0c4a0",
-    pipShirt: "#3d7a78",
-    pipHat: "#e07a5f",
-    pipBoots: "#3a2a22",
-    toastBg: "#f7f1e6",
-    toastColor: "#2c241c",
-    toastPadding: "16px 18px",
-    toastRadius: "20px",
-    toastWidth: "320px",
-    dockOffset: "24px",
-    dockGap: "12px",
+  card: {
+    background: "#111827",
+    color: "#f9fafb",
     accent: "#e07a5f",
   },
 });
 ```
 
-```css
-.pip-toast-host {
-  --cn-pip-shirt: navy;
-  --cn-toast-padding: 18px 20px;
-  --cn-dock-offset: 16px;
-}
-```
-
-`THEME_VARS` lists every key → CSS variable. Empty string / omitted keys keep the default.
+Or set `--toast-bg`, `--toast-color`, `--toast-accent` on `.pip-toast-host`.
 
 ## Positions
 

@@ -114,12 +114,18 @@ export function withMode(placement: Placement, mode: "pull" | "push"): ActingLay
   return { ...placement, ...pose, mode };
 }
 
+export function revealDockSlot(dock: HTMLElement, placement: Placement): void {
+  if (placement.vertical === "bottom") dock.scrollTop = dock.scrollHeight;
+  else dock.scrollTop = 0;
+}
+
 export function insertSlot(dock: HTMLElement, placement: Placement, height: number): HTMLElement {
   const spacer = document.createElement("div");
   spacer.className = "note note--spacer";
   spacer.style.height = `${Math.max(72, height)}px`;
   if (placement.vertical === "top") dock.prepend(spacer);
   else dock.append(spacer);
+  revealDockSlot(dock, placement);
   return spacer;
 }
 

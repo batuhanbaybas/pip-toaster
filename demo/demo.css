@@ -137,7 +137,7 @@ body {
   background: var(--accent);
 }
 
-.theme-grid {
+.swatches {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
@@ -166,11 +166,6 @@ body {
   border-radius: 6px;
   background: transparent;
   cursor: pointer;
-}
-
-.field input[type="range"] {
-  padding: 0;
-  accent-color: var(--accent);
 }
 
 .presets {

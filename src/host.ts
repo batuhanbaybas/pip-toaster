@@ -1,6 +1,6 @@
+import { applyCardColors, type CardColors } from "./card.js";
 import { createCharacter } from "./character.js";
 import { POSITIONS, type ToastPosition } from "./placement.js";
-import { applyTheme, type ToastTheme } from "./theme.js";
 
 const stylesheetHref = new URL("./styles.css", import.meta.url).href;
 
@@ -9,7 +9,7 @@ export type DockMap = Record<ToastPosition, HTMLElement>;
 export interface MountHostOptions {
   target?: HTMLElement | null;
   zIndex?: number;
-  theme?: ToastTheme;
+  card?: CardColors;
 }
 
 export interface ToastHost {
@@ -21,7 +21,7 @@ export interface ToastHost {
   docks: DockMap;
   ready: Promise<void>;
   setZIndex(value: number): void;
-  setTheme(theme: ToastTheme): void;
+  setCardColors(colors: CardColors): void;
   destroy(): void;
 }
 
@@ -37,7 +37,7 @@ function linkHasSheet(link: HTMLLinkElement): boolean {
  * Overlay on document.body (fixed) or a custom target (absolute).
  * Styles live in Shadow DOM so host-page CSS cannot leak in (or out).
  */
-export function mountHost({ target, zIndex, theme }: MountHostOptions = {}): ToastHost {
+export function mountHost({ target, zIndex, card }: MountHostOptions = {}): ToastHost {
   const mountAt = target ?? document.body;
   const contained = mountAt !== document.body;
 
@@ -90,7 +90,7 @@ export function mountHost({ target, zIndex, theme }: MountHostOptions = {}): Toa
   root.append(toasterLayer, lane);
   shadow.append(root);
   mountAt.append(host);
-  if (theme) applyTheme(host, theme);
+  if (card) applyCardColors(host, card);
 
   return {
     host,
@@ -103,8 +103,8 @@ export function mountHost({ target, zIndex, theme }: MountHostOptions = {}): Toa
     setZIndex(value) {
       host.style.zIndex = String(value);
     },
-    setTheme(next) {
-      applyTheme(host, next);
+    setCardColors(colors) {
+      applyCardColors(host, colors);
     },
     destroy() {
       host.remove();

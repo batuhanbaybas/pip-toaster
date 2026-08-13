@@ -1,8 +1,8 @@
 import type { EffortId } from "./effort.js";
 import type { ToastPosition } from "./placement.js";
-import type { ToastTheme } from "./theme.js";
+import type { CardColors } from "./card.js";
 
-export type { EffortId, ToastPosition, ToastTheme };
+export type { CardColors, EffortId, ToastPosition };
 
 export interface ToastPayload {
   title?: string;
@@ -28,11 +28,11 @@ export interface ToasterOptions {
   /** Mount inside this element (`position: relative`). Defaults to `document.body`. */
   target?: HTMLElement | null;
   labels?: ToasterLabels;
-  /** Pip + card + dock look. Also settable later via `configure({ theme })`. */
-  theme?: ToastTheme;
+  /** Toast card colors. Pip is unchanged. */
+  card?: CardColors;
 }
 
-export type ToasterConfig = Pick<ToasterOptions, "position" | "duration" | "zIndex" | "theme">;
+export type ToasterConfig = Pick<ToasterOptions, "position" | "duration" | "zIndex" | "card">;
 
 export interface Toaster {
   (input: string | ToastPayload): string;

@@ -1,43 +1,38 @@
-/* character-notification — scoped inside Shadow DOM (:host)
-   Public tokens are --cn-*; set them on the host (JS theme or page CSS).
-   Internal --_* aliases resolve those tokens with defaults. */
+/* character-notification — scoped inside Shadow DOM (:host) */
 :host {
-  --_font: var(--cn-font, ui-sans-serif, system-ui, sans-serif);
-  --_accent: var(--cn-accent, #e07a5f);
+  --_font: ui-sans-serif, system-ui, sans-serif;
+  --_accent: var(--toast-accent, #e07a5f);
 
-  --_pip-skin: var(--cn-pip-skin, #f0c4a0);
-  --_pip-skin-shadow: var(--cn-pip-skin-shadow, #d9a57e);
-  --_pip-shirt: var(--cn-pip-shirt, #3d7a78);
-  --_pip-shirt-dark: var(--cn-pip-shirt-dark, #2c5e5c);
-  --_pip-hat: var(--cn-pip-hat, var(--_accent));
-  --_pip-boots: var(--cn-pip-boots, #3a2a22);
-  --_pip-eyes: var(--cn-pip-eyes, #2b1410);
-  --_pip-brows: var(--cn-pip-brows, #7a4a32);
-  --_pip-mouth: var(--cn-pip-mouth, #c47a62);
-  --_pip-sweat: var(--cn-pip-sweat, #9fd4e6);
-  --_pip-width: var(--cn-pip-width, 72px);
-  --_pip-height: var(--cn-pip-height, 96px);
-  --_pip-grab-gap: var(--cn-pip-grab-gap, 10px);
-  --_pip-mate-shirt: var(--cn-pip-mate-shirt, #4f8f7c);
-  --_pip-mate-shirt-dark: var(--cn-pip-mate-shirt-dark, #2c5e5c);
-  --_pip-mate-hat: var(--cn-pip-mate-hat, #c96b54);
+  --_pip-skin: #f0c4a0;
+  --_pip-shirt: #3d7a78;
+  --_pip-hat: #e07a5f;
+  --_pip-boots: #3a2a22;
+  --_pip-eyes: #1a0c08;
+  --_pip-brows: #1a0c08;
+  --_pip-mouth: #d4654f;
+  --_pip-sweat: #9fd4e6;
+  --_pip-width: 72px;
+  --_pip-height: 96px;
+  --_pip-grab-gap: 10px;
+  --_pip-mate-shirt: #4f8f7c;
+  --_pip-mate-hat: #c96b54;
 
-  --_toast-bg: var(--cn-toast-bg, #f7f1e6);
-  --_toast-color: var(--cn-toast-color, #2c241c);
-  --_toast-muted: var(--cn-toast-muted, #6d6256);
-  --_toast-body: var(--cn-toast-body, #4a4036);
-  --_toast-padding: var(--cn-toast-padding, 14px 16px 14px 18px);
-  --_toast-radius: var(--cn-toast-radius, 16px);
-  --_toast-width: var(--cn-toast-width, 340px);
-  --_toast-max-height: var(--cn-toast-max-height, 200px);
-  --_toast-shadow: var(--cn-toast-shadow, 0 18px 40px rgba(0, 0, 0, 0.28));
-  --_toast-title-font: var(--cn-toast-title-font, Georgia, serif);
-  --_toast-title-size: var(--cn-toast-title-size, 1.05rem);
-  --_toast-body-size: var(--cn-toast-body-size, 0.9rem);
-  --_toast-grip: var(--cn-toast-grip, #ead9c4);
+  --_toast-bg: var(--toast-bg, #f7f1e6);
+  --_toast-color: var(--toast-color, #2c241c);
+  --_toast-muted: var(--_toast-color);
+  --_toast-body: var(--_toast-color);
+  --_toast-padding: 14px 16px 14px 18px;
+  --_toast-radius: 16px;
+  --_toast-width: 340px;
+  --_toast-max-height: 260px;
+  --_toast-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  --_toast-title-font: Georgia, serif;
+  --_toast-title-size: 1.05rem;
+  --_toast-body-size: 0.9rem;
+  --_toast-grip: var(--_toast-bg);
 
-  --_dock-gap: var(--cn-dock-gap, 10px);
-  --_dock-offset: var(--cn-dock-offset, 24px);
+  --_dock-gap: 10px;
+  --_dock-offset: 24px;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   /* position is set inline: fixed on body, absolute on a custom target */
@@ -80,7 +75,26 @@
   gap: var(--_dock-gap);
   width: var(--_toast-width);
   max-height: calc(100% - 2 * var(--_dock-offset));
+  overflow-x: hidden;
+  overflow-y: auto;
   overflow-anchor: none;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--_toast-color) 40%, transparent) transparent;
+}
+
+.dock::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dock::-webkit-scrollbar-thumb {
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--_toast-color) 35%, transparent);
+}
+
+.dock:empty {
+  pointer-events: none;
 }
 
 .dock[data-position="top-left"] {
@@ -102,25 +116,57 @@
 .dock[data-position="bottom-left"] {
   bottom: var(--_dock-offset);
   left: var(--_dock-offset);
-  justify-content: flex-end;
 }
 
 .dock[data-position="bottom-center"] {
   bottom: var(--_dock-offset);
   left: 50%;
   transform: translateX(-50%);
-  justify-content: flex-end;
 }
 
 .dock[data-position="bottom-right"] {
   bottom: var(--_dock-offset);
   right: var(--_dock-offset);
-  justify-content: flex-end;
+}
+
+.dock[data-position="top-left"],
+.dock[data-position="bottom-left"] {
+  align-items: flex-start;
+}
+
+.dock[data-position="top-center"],
+.dock[data-position="bottom-center"] {
+  align-items: center;
+}
+
+.dock[data-position="top-right"],
+.dock[data-position="bottom-right"] {
+  align-items: flex-end;
+}
+
+.dock:has(.slot) {
+  width: calc(var(--_toast-width) + var(--_pip-width) + var(--_pip-grab-gap));
+}
+
+.slot {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--_pip-grab-gap);
+  flex: 0 0 auto;
+  width: max-content;
+  pointer-events: none;
+}
+
+.slot .note {
+  pointer-events: auto;
 }
 
 .note {
   pointer-events: auto;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
   max-height: var(--_toast-max-height);
   padding: var(--_toast-padding);
   overflow: hidden;
@@ -142,11 +188,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex: 0 0 auto;
   margin-bottom: 4px;
+  padding-right: 20px;
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--_toast-muted);
+  opacity: 0.72;
 }
 
 .note__weight {
@@ -155,21 +204,27 @@
 }
 
 .note__title {
+  flex: 0 0 auto;
   margin: 0 0 4px;
+  padding-right: 20px;
   font-family: var(--_toast-title-font);
   font-size: var(--_toast-title-size);
   font-weight: 700;
 }
 
 .note__body {
-  display: -webkit-box;
+  flex: 1 1 auto;
+  min-height: 0;
   margin: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   font-size: var(--_toast-body-size);
   line-height: 1.45;
   color: var(--_toast-body);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 7;
+  opacity: 0.88;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--_toast-color) 35%, transparent) transparent;
 }
 
 .note__close {
@@ -188,7 +243,7 @@
 }
 
 .note__close:hover {
-  background: rgba(44, 36, 28, 0.08);
+  background: color-mix(in srgb, var(--_toast-color) 10%, transparent);
 }
 
 .note.is-leaving {
@@ -235,6 +290,8 @@
 
 .delivery__card {
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: var(--_toast-width);
   max-height: var(--_toast-max-height);
   padding: var(--_toast-padding);
@@ -253,8 +310,8 @@
   width: 10px;
   height: 16px;
   border-radius: 2px;
-  background: var(--_toast-grip);
-  box-shadow: 1px 1px 0 rgba(44, 36, 28, 0.12);
+  background: color-mix(in srgb, var(--_toast-grip) 88%, black);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--_toast-color) 12%, transparent);
 }
 
 .delivery[data-pip-side="after"] .delivery__card::before {
@@ -286,17 +343,18 @@
   width: 10px;
   height: 16px;
   border-radius: 2px;
-  background: var(--_toast-grip);
-  box-shadow: 1px 1px 0 rgba(44, 36, 28, 0.12);
+  background: color-mix(in srgb, var(--_toast-grip) 88%, black);
+  box-shadow: 1px 1px 0 color-mix(in srgb, var(--_toast-color) 12%, transparent);
 }
 
 .character[data-role="mate"] .character__hat,
 .character[data-role="mate"] .character__hat::after {
-  background: var(--_pip-mate-hat);
+  background: color-mix(in srgb, var(--_pip-mate-hat) 82%, black);
 }
 
 .character[data-role="mate"] .character__body {
-  background: linear-gradient(180deg, var(--_pip-mate-shirt), var(--_pip-mate-shirt-dark));
+  background: var(--_pip-mate-shirt);
+  box-shadow: inset 0 -6px 0 color-mix(in srgb, var(--_pip-mate-shirt) 78%, black);
 }
 
 .delivery .character {
@@ -355,10 +413,10 @@
 
 .character__shadow {
   position: absolute;
-  right: 10px;
-  bottom: 2px;
-  left: 10px;
-  height: 10px;
+  right: 12px;
+  bottom: 4px;
+  left: 12px;
+  height: 8px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.35);
   filter: blur(2px);
@@ -366,57 +424,74 @@
 
 .character__figure {
   position: absolute;
-  inset: 0 8px 8px;
+  inset: 0 8px 6px;
   transform: scaleX(var(--face));
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.14)) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
 }
 
 .character__leg {
   position: absolute;
   bottom: 0;
-  width: 10px;
-  height: 28px;
+  z-index: 0;
+  width: 11px;
+  height: 30px;
   border-radius: 6px;
   background: var(--_pip-boots);
   transform-origin: 50% 0;
 }
 
 .character__leg--left {
-  left: 12px;
+  left: 11px;
 }
 
 .character__leg--right {
-  right: 12px;
+  right: 11px;
 }
 
 .character__torso {
   position: absolute;
-  right: 4px;
-  bottom: 22px;
-  left: 4px;
-  height: 58px;
+  right: 2px;
+  bottom: 16px;
+  left: 2px;
+  z-index: 1;
+  height: 62px;
 }
 
 .character__body {
   position: absolute;
-  top: 22px;
-  right: 8px;
-  left: 8px;
-  height: 28px;
-  border-radius: 14px 14px 10px 10px;
-  background: linear-gradient(180deg, var(--_pip-shirt), var(--_pip-shirt-dark));
+  top: 20px;
+  right: 6px;
+  left: 6px;
+  z-index: 2;
+  height: 32px;
+  border-radius: 16px 16px 11px 11px;
+  background: var(--_pip-shirt);
+  box-shadow: inset 0 -7px 0 color-mix(in srgb, var(--_pip-shirt) 78%, black);
+}
+
+.character__body::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 11px;
+  height: 12px;
+  margin-left: -5.5px;
+  border-radius: 4px;
+  background: var(--_pip-skin);
 }
 
 .character__head {
   position: absolute;
-  top: 0;
+  top: -2px;
   left: 50%;
+  z-index: 3;
   width: 32px;
   height: 32px;
   margin-left: -16px;
   border-radius: 50%;
   background: var(--_pip-skin);
-  box-shadow: inset -3px -2px 0 var(--_pip-skin-shadow);
-  z-index: 2;
+  box-shadow: inset -3px -2px 0 color-mix(in srgb, var(--_pip-skin) 72%, black);
 }
 
 .character__hat {
@@ -437,7 +512,7 @@
   width: 14px;
   height: 6px;
   border-radius: 4px;
-  background: var(--_pip-hat);
+  background: color-mix(in srgb, var(--_pip-hat) 78%, black);
 }
 
 .character__face {
@@ -452,6 +527,7 @@
   height: 6px;
   border-radius: 50%;
   background: var(--_pip-eyes);
+  box-shadow: 0 0 0 1.5px #fff;
 }
 
 .character__eye--l {
@@ -469,6 +545,7 @@
   height: 2px;
   border-radius: 2px;
   background: var(--_pip-brows);
+  box-shadow: 0 0.5px 0 #fff;
   opacity: 0;
 }
 
@@ -489,39 +566,41 @@
   margin-left: -4px;
   border-radius: 0 0 8px 8px;
   background: var(--_pip-mouth);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--_pip-mouth) 40%, #fff);
 }
 
 .character__arm {
   position: absolute;
-  top: 28px;
+  top: 26px;
   width: 9px;
-  height: 22px;
+  height: 24px;
   border-radius: 6px;
   background: var(--_pip-skin);
-  transform-origin: 50% 0;
-  z-index: 1;
+  transform-origin: 50% 2px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--_pip-skin) 70%, black);
 }
 
 .character__arm--back {
-  left: 2px;
+  left: 3px;
+  z-index: 1;
   transform: rotate(18deg);
 }
 
 .character__arm--front {
-  right: 0;
+  right: 1px;
+  z-index: 4;
   transform: rotate(-28deg);
-  z-index: 3;
 }
 
 .character__hand {
   position: absolute;
   right: -1px;
-  bottom: -6px;
+  bottom: -5px;
   width: 11px;
   height: 11px;
   border-radius: 50%;
   background: var(--_pip-skin);
-  box-shadow: 0 0 0 2px var(--_toast-bg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--_pip-skin) 70%, black);
 }
 
 /* FX */
@@ -563,7 +642,7 @@
   width: 10px;
   height: 2px;
   border-radius: 2px;
-  background: rgba(243, 238, 230, 0.45);
+  background: rgba(255, 255, 255, 0.55);
 }
 
 .strain-mark--2 {
@@ -767,6 +846,7 @@
   margin-left: -5px;
   border-radius: 4px;
   background: var(--_pip-eyes);
+  box-shadow: 0 0 0 1px #fff;
 }
 
 .character[data-state="exhausted"] {

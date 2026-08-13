@@ -40,58 +40,37 @@ const toast = createToaster({
 
 let position = "bottom-right";
 
-const skinInput = document.querySelector("#theme-skin");
-const shirtInput = document.querySelector("#theme-shirt");
-const hatInput = document.querySelector("#theme-hat");
-const bootsInput = document.querySelector("#theme-boots");
-const cardInput = document.querySelector("#theme-card");
-const inkInput = document.querySelector("#theme-ink");
-const paddingInput = document.querySelector("#theme-padding");
-const widthInput = document.querySelector("#theme-width");
-const offsetInput = document.querySelector("#theme-offset");
-const paddingLabel = document.querySelector("#padding-label");
-const widthLabel = document.querySelector("#width-label");
-const offsetLabel = document.querySelector("#offset-label");
+const cardBg = document.querySelector("#card-bg");
+const cardColor = document.querySelector("#card-color");
+const cardAccent = document.querySelector("#card-accent");
 
-function syncTheme() {
-  const padding = Number(paddingInput.value);
-  const width = Number(widthInput.value);
-  const offset = Number(offsetInput.value);
-  paddingLabel.textContent = String(padding);
-  widthLabel.textContent = String(width);
-  offsetLabel.textContent = String(offset);
+function hexLuminance(hex) {
+  const raw = hex.replace("#", "");
+  const n = raw.length === 3 ? raw.split("").map((c) => c + c).join("") : raw;
+  const r = Number.parseInt(n.slice(0, 2), 16) / 255;
+  const g = Number.parseInt(n.slice(2, 4), 16) / 255;
+  const b = Number.parseInt(n.slice(4, 6), 16) / 255;
+  const lin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
 
+function syncCard() {
   toast.configure({
-    theme: {
-      pipSkin: skinInput.value,
-      pipShirt: shirtInput.value,
-      pipHat: hatInput.value,
-      pipBoots: bootsInput.value,
-      accent: hatInput.value,
-      toastBg: cardInput.value,
-      toastColor: inkInput.value,
-      toastPadding: `${padding}px ${padding + 2}px ${padding}px ${padding + 4}px`,
-      toastWidth: `${width}px`,
-      dockOffset: `${offset}px`,
+    card: {
+      background: cardBg.value,
+      color: cardColor.value,
+      accent: cardAccent.value,
     },
   });
 }
 
-for (const el of [
-  skinInput,
-  shirtInput,
-  hatInput,
-  bootsInput,
-  cardInput,
-  inkInput,
-  paddingInput,
-  widthInput,
-  offsetInput,
-]) {
-  el.addEventListener("input", syncTheme);
-}
-
-syncTheme();
+cardBg.addEventListener("input", () => {
+  cardColor.value = hexLuminance(cardBg.value) > 0.42 ? "#2c241c" : "#f3eee6";
+  syncCard();
+});
+cardColor.addEventListener("input", syncCard);
+cardAccent.addEventListener("input", syncCard);
+syncCard();
 
 function syncPreview() {
   preview.textContent = HINTS[classifyEffort(titleInput.value, bodyInput.value)];

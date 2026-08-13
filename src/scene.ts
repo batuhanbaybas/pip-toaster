@@ -7,6 +7,7 @@ import {
   measureTravel,
   offsetAlong,
   parsePosition,
+  revealDockSlot,
   withMode,
   type ActingLayout,
   type Placement,
@@ -36,7 +37,8 @@ type CharacterState =
   | "slip"
   | "release"
   | "exhausted"
-  | "exit";
+  | "exit"
+  | "read";
 
 interface DeliverJob {
   kind: "deliver";
@@ -179,6 +181,7 @@ export function createScene({
   let busy = false;
   let seq = 0;
   let dismissInFlight = false;
+  let waitingOnId: string | null = null;
 
   let activeWrap: HTMLElement | null = null;
 
@@ -258,11 +261,31 @@ export function createScene({
     wrap.style.visibility = "";
   }
 
-  function parkCharacter(): void {
+  function parkCharacter() {
+    waitingOnId = null;
     lane.querySelectorAll('.character[data-role="mate"]').forEach((el) => el.remove());
     lane.append(character);
     hideCharacter();
     activeWrap = null;
+  }
+
+  function detachFromSlot() {
+    const slot = character.closest(".slot");
+    lane.append(character);
+    if (slot instanceof HTMLElement) {
+      const note = slot.querySelector(".note");
+      if (note) slot.replaceWith(note);
+      else slot.remove();
+    }
+    waitingOnId = null;
+  }
+
+  async function closeBook() {
+    if (!waitingOnId) return;
+    character.style.setProperty("--lean", "0deg");
+    setCharacterState("release", character.dataset.effort ?? "normal");
+    await wait(220);
+    detachFromSlot();
   }
 
   async function playPull({
@@ -345,7 +368,7 @@ export function createScene({
 
     if (reduced) {
       revealWrap(wrap, travel.end);
-      settleToast(job, wrap, spacer, profile, placement);
+      settleToast(job, wrap, spacer, profile, placement, null);
       return;
     }
 
@@ -367,15 +390,18 @@ export function createScene({
     setCharacterState("release", profile.id, profile, layout);
     await wait(profile.releaseMs);
 
-    if (profile.exhaustedMs > 0) {
-      setCharacterState("exhausted", profile.id, profile, layout);
-      await wait(profile.exhaustedMs);
+    const stay = job.durationMs === 0 && jobs.length === 0 && !dismissInFlight;
+
+    if (!stay) {
+      if (profile.exhaustedMs > 0) {
+        setCharacterState("exhausted", profile.id, profile, layout);
+        await wait(profile.exhaustedMs);
+      }
+      setCharacterState("exit", profile.id, profile, layout);
+      await wait(profile.exitMs);
     }
 
-    setCharacterState("exit", profile.id, profile, layout);
-    await wait(profile.exitMs);
-
-    settleToast(job, wrap, spacer, profile, placement);
+    settleToast(job, wrap, spacer, profile, placement, stay ? layout : null);
   }
 
   function settleToast(
@@ -384,6 +410,7 @@ export function createScene({
     spacer: HTMLElement,
     profile: EffortProfile,
     placement: Placement,
+    waitLayout: ActingLayout | null,
   ): void {
     const parked = buildCard({
       id: job.id,
@@ -394,9 +421,27 @@ export function createScene({
       labels: copy,
     });
 
-    spacer.replaceWith(parked);
-    wrap.remove();
-    parkCharacter();
+    lane.querySelectorAll('.character[data-role="mate"]').forEach((el) => el.remove());
+
+    if (waitLayout) {
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      slot.dataset.pipSide = waitLayout.pipSide;
+      if (waitLayout.pipSide === "before") slot.append(character, parked);
+      else slot.append(parked, character);
+      spacer.replaceWith(slot);
+      wrap.remove();
+      activeWrap = null;
+      waitingOnId = job.id;
+      setCharacterState("read", profile.id, profile, waitLayout);
+      character.style.setProperty("--lean", waitLayout.pipSide === "before" ? "8deg" : "-8deg");
+    } else {
+      spacer.replaceWith(parked);
+      wrap.remove();
+      parkCharacter();
+    }
+
+    revealDockSlot(docks[placement.id], placement);
 
     const toast: ParkedToast = {
       id: job.id,
@@ -423,7 +468,7 @@ export function createScene({
     }
   }
 
-  async function playDismiss(job: DismissJob): Promise<void> {
+  async function playDismiss(job: DismissJob, fromWait = false): Promise<void> {
     const toast = toasts.get(job.id);
     if (!toast?.el) {
       toasts.delete(job.id);
@@ -440,6 +485,7 @@ export function createScene({
     spacer.className = "note note--spacer";
     spacer.style.height = `${el.offsetHeight}px`;
     el.replaceWith(spacer);
+    spacer.scrollIntoView({ block: "nearest", inline: "nearest" });
 
     const card = buildCard({
       id: toast.id,
@@ -462,11 +508,17 @@ export function createScene({
       return;
     }
 
-    setCharacterState("enter", profile.id, profile, layout);
-    revealWrap(wrap, travel.end);
-    await wait(Math.max(280, profile.enterMs * 0.65));
-    setCharacterState("grab", profile.id, profile, layout);
-    await wait(profile.grabMs);
+    if (fromWait) {
+      setCharacterState("grab", profile.id, profile, layout);
+      revealWrap(wrap, travel.end);
+      await wait(profile.grabMs);
+    } else {
+      setCharacterState("enter", profile.id, profile, layout);
+      revealWrap(wrap, travel.end);
+      await wait(Math.max(280, profile.enterMs * 0.65));
+      setCharacterState("grab", profile.id, profile, layout);
+      await wait(profile.grabMs);
+    }
 
     await playPull({
       wrap,
@@ -493,8 +545,19 @@ export function createScene({
     while (jobs.length > 0) {
       const next = jobs.shift();
       if (!next) break;
+      const fromWait = next.kind === "dismiss" && waitingOnId === next.id;
+      if (waitingOnId) {
+        if (fromWait) {
+          character.style.setProperty("--lean", "0deg");
+          setCharacterState("release", character.dataset.effort ?? "normal");
+          await wait(180);
+          detachFromSlot();
+        } else {
+          await closeBook();
+        }
+      }
       if (next.kind === "deliver") await playDelivery(next);
-      else await playDismiss(next);
+      else await playDismiss(next, fromWait);
     }
     busy = false;
     if (toasts.size === 0) dismissInFlight = false;

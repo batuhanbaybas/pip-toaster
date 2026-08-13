@@ -76,7 +76,7 @@ export function createToaster(options: ToasterOptions = {}): Toaster {
   const host = mountHost({
     target: options.target,
     zIndex: config.zIndex,
-    theme: options.theme,
+    card: options.card,
   });
 
   const scene = createScene({
@@ -102,7 +102,7 @@ export function createToaster(options: ToasterOptions = {}): Toaster {
         zIndex: next.zIndex ?? config.zIndex,
       };
       if (next.zIndex != null) host.setZIndex(next.zIndex);
-      if (next.theme) host.setTheme(next.theme);
+      if (next.card) host.setCardColors(next.card);
     },
     dismiss(id: string) {
       scene.dismiss(id);
@@ -136,7 +136,7 @@ export const toast: Toaster = withToasterApi(showDefault, {
       ...defaultOptions,
       ...next,
       position: parsePosition(next.position ?? defaultOptions.position),
-      theme: next.theme ? { ...defaultOptions.theme, ...next.theme } : defaultOptions.theme,
+      card: next.card ? { ...defaultOptions.card, ...next.card } : defaultOptions.card,
     };
     if (defaultToaster) defaultToaster.configure(next);
   },
