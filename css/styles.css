@@ -411,6 +411,31 @@ body {
   right: -3px;
 }
 
+.delivery[data-axis="y"] {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.delivery[data-axis="y"][data-pip-side="after"] .delivery__card::before {
+  left: 50%;
+  right: auto;
+  bottom: -5px;
+  width: 18px;
+  height: 10px;
+  margin-left: -9px;
+}
+
+.delivery[data-axis="y"][data-pip-side="before"] .delivery__card::before {
+  top: -5px;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  width: 18px;
+  height: 10px;
+  margin-left: -9px;
+}
+
 .delivery[data-effort="massive"] .delivery__card,
 .delivery[data-effort="heavy"] .delivery__card {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.42);
@@ -673,21 +698,24 @@ body {
 .character[data-state="enter"] .character__leg--left,
 .character[data-state="exit"] .character__leg--left,
 .character[data-state="pull"] .character__leg--left,
-.character[data-state="drag"] .character__leg--left {
+.character[data-state="drag"] .character__leg--left,
+.character[data-state="push"] .character__leg--left {
   animation: step-a var(--walk-ms, 360ms) infinite ease-in-out;
 }
 
 .character[data-state="enter"] .character__leg--right,
 .character[data-state="exit"] .character__leg--right,
 .character[data-state="pull"] .character__leg--right,
-.character[data-state="drag"] .character__leg--right {
+.character[data-state="drag"] .character__leg--right,
+.character[data-state="push"] .character__leg--right {
   animation: step-b var(--walk-ms, 360ms) infinite ease-in-out;
 }
 
 .character[data-state="enter"] .character__figure,
 .character[data-state="exit"] .character__figure,
 .character[data-state="pull"] .character__figure,
-.character[data-state="drag"] .character__figure {
+.character[data-state="drag"] .character__figure,
+.character[data-state="push"] .character__figure {
   animation: walk-bob var(--walk-ms, 360ms) infinite ease-in-out;
 }
 
@@ -701,6 +729,7 @@ body {
 
 .character[data-state="pull"] .character__arm--front,
 .character[data-state="drag"] .character__arm--front,
+.character[data-state="push"] .character__arm--front,
 .character[data-state="strain"] .character__arm--front,
 .character[data-state="slip"] .character__arm--front {
   transform: rotate(-78deg);
@@ -708,6 +737,7 @@ body {
 
 .character[data-both-hands="true"][data-state="pull"] .character__arm--back,
 .character[data-both-hands="true"][data-state="drag"] .character__arm--back,
+.character[data-both-hands="true"][data-state="push"] .character__arm--back,
 .character[data-both-hands="true"][data-state="strain"] .character__arm--back,
 .character[data-both-hands="true"][data-state="slip"] .character__arm--back,
 .character[data-both-hands="true"][data-state="grab"] .character__arm--back {
@@ -716,16 +746,94 @@ body {
   z-index: 4;
 }
 
+/* Push: plant behind the card and shove toward the nearest edge */
+.character[data-push="right"][data-state="push"] .character__arm--front,
+.character[data-push="right"][data-state="grab"] .character__arm--front,
+.character[data-push="right"][data-state="strain"] .character__arm--front,
+.character[data-push="right"][data-state="slip"] .character__arm--front,
+.character[data-push="left"][data-state="push"] .character__arm--front,
+.character[data-push="left"][data-state="grab"] .character__arm--front,
+.character[data-push="left"][data-state="strain"] .character__arm--front,
+.character[data-push="left"][data-state="slip"] .character__arm--front {
+  transform: rotate(-92deg);
+}
+
+.character[data-push="right"][data-both-hands="true"] .character__arm--back,
+.character[data-push="left"][data-both-hands="true"] .character__arm--back {
+  transform: rotate(-80deg);
+  left: 10px;
+  z-index: 4;
+}
+
+.character[data-push="top"][data-state="enter"] .character__arm--front,
+.character[data-push="top"][data-state="pull"] .character__arm--front,
+.character[data-push="top"][data-state="push"] .character__arm--front,
+.character[data-push="top"][data-state="grab"] .character__arm--front,
+.character[data-push="top"][data-state="strain"] .character__arm--front,
+.character[data-push="top"][data-state="slip"] .character__arm--front,
+.character[data-push="top"][data-both-hands="true"] .character__arm--back {
+  transform: rotate(-158deg);
+}
+
+.character[data-push="top"][data-both-hands="true"] .character__arm--back {
+  left: 10px;
+  z-index: 4;
+}
+
+.character[data-push="bottom"][data-state="enter"] .character__arm--front,
+.character[data-push="bottom"][data-state="pull"] .character__arm--front,
+.character[data-push="bottom"][data-state="push"] .character__arm--front,
+.character[data-push="bottom"][data-state="grab"] .character__arm--front,
+.character[data-push="bottom"][data-state="strain"] .character__arm--front,
+.character[data-push="bottom"][data-state="slip"] .character__arm--front,
+.character[data-push="bottom"][data-both-hands="true"] .character__arm--back {
+  transform: rotate(12deg);
+}
+
+.character[data-push="bottom"][data-both-hands="true"] .character__arm--back {
+  left: 10px;
+  z-index: 4;
+}
+
+/* Barbell lift: crouched under the card */
+.character[data-axis="y"][data-push="top"] .character__leg {
+  height: 18px;
+  border-radius: 8px 8px 4px 4px;
+}
+
+.character[data-axis="y"][data-push="top"] .character__torso {
+  bottom: 12px;
+}
+
+.character[data-axis="y"][data-push="top"] .character__body {
+  height: 24px;
+}
+
+/* Press from above: planted on the card, shoving down */
+.character[data-axis="y"][data-push="bottom"] .character__leg {
+  height: 20px;
+}
+
+.character[data-axis="y"][data-push="bottom"] .character__torso {
+  bottom: 14px;
+}
+
 .character[data-state="strain"] .character__fx,
 .character[data-state="slip"] .character__fx,
 .character[data-effort="massive"][data-state="pull"] .character__fx,
-.character[data-effort="heavy"][data-state="pull"] .character__fx {
+.character[data-effort="massive"][data-state="drag"] .character__fx,
+.character[data-effort="massive"][data-state="push"] .character__fx,
+.character[data-effort="heavy"][data-state="pull"] .character__fx,
+.character[data-effort="heavy"][data-state="drag"] .character__fx,
+.character[data-effort="heavy"][data-state="push"] .character__fx {
   opacity: 1;
 }
 
 .character[data-state="strain"] .sweat,
 .character[data-state="slip"] .sweat,
-.character[data-effort="massive"][data-state="pull"] .sweat {
+.character[data-effort="massive"][data-state="pull"] .sweat,
+.character[data-effort="massive"][data-state="drag"] .sweat,
+.character[data-effort="massive"][data-state="push"] .sweat {
   animation: drip 700ms ease-in infinite;
 }
 
@@ -741,25 +849,34 @@ body {
 .character[data-state="strain"] .character__brow,
 .character[data-state="slip"] .character__brow,
 .character[data-effort="heavy"][data-state="pull"] .character__brow,
-.character[data-effort="massive"][data-state="pull"] .character__brow {
+.character[data-effort="heavy"][data-state="drag"] .character__brow,
+.character[data-effort="heavy"][data-state="push"] .character__brow,
+.character[data-effort="massive"][data-state="pull"] .character__brow,
+.character[data-effort="massive"][data-state="drag"] .character__brow,
+.character[data-effort="massive"][data-state="push"] .character__brow {
   opacity: 1;
 }
 
 .character[data-state="strain"] .character__brow--l,
 .character[data-effort="heavy"][data-state="pull"] .character__brow--l,
-.character[data-effort="massive"][data-state="pull"] .character__brow--l {
+.character[data-effort="heavy"][data-state="drag"] .character__brow--l,
+.character[data-effort="massive"][data-state="pull"] .character__brow--l,
+.character[data-effort="massive"][data-state="drag"] .character__brow--l {
   transform: rotate(18deg);
 }
 
 .character[data-state="strain"] .character__brow--r,
 .character[data-effort="heavy"][data-state="pull"] .character__brow--r,
-.character[data-effort="massive"][data-state="pull"] .character__brow--r {
+.character[data-effort="heavy"][data-state="drag"] .character__brow--r,
+.character[data-effort="massive"][data-state="pull"] .character__brow--r,
+.character[data-effort="massive"][data-state="drag"] .character__brow--r {
   transform: rotate(-18deg);
 }
 
 .character[data-state="strain"] .character__eye,
 .character[data-state="slip"] .character__eye,
-.character[data-effort="massive"][data-state="pull"] .character__eye {
+.character[data-effort="massive"][data-state="pull"] .character__eye,
+.character[data-effort="massive"][data-state="drag"] .character__eye {
   height: 3px;
   border-radius: 2px;
   top: 8px;
@@ -768,7 +885,9 @@ body {
 .character[data-state="strain"] .character__mouth,
 .character[data-state="slip"] .character__mouth,
 .character[data-effort="heavy"][data-state="pull"] .character__mouth,
-.character[data-effort="massive"][data-state="pull"] .character__mouth {
+.character[data-effort="heavy"][data-state="drag"] .character__mouth,
+.character[data-effort="massive"][data-state="pull"] .character__mouth,
+.character[data-effort="massive"][data-state="drag"] .character__mouth {
   width: 10px;
   height: 6px;
   margin-left: -5px;
@@ -818,7 +937,8 @@ body {
 
 .character[data-effort="light"][data-state="enter"] .character__figure,
 .character[data-effort="light"][data-state="pull"] .character__figure,
-.character[data-effort="light"][data-state="drag"] .character__figure {
+.character[data-effort="light"][data-state="drag"] .character__figure,
+.character[data-effort="light"][data-state="push"] .character__figure {
   animation-duration: 240ms;
 }
 

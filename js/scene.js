@@ -6,6 +6,7 @@ import {
   measureTravel,
   offsetAlong,
   parsePosition,
+  withMode,
 } from "./placement.js";
 
 const PRESETS = {
@@ -96,26 +97,36 @@ export function createScene({ character, lane, stage, docks }) {
   let busy = false;
   let seq = 0;
 
-  function setCharacterState(state, effort, profile, placement) {
+  function setCharacterState(state, effort, profile, layout) {
     character.dataset.state = state;
     character.dataset.effort = effort;
-    character.dataset.bothHands = String(Boolean(profile?.bothHands));
-    if (placement) character.dataset.face = placement.face;
+    character.dataset.bothHands = String(
+      layout?.axis === "y" || layout?.mode === "push" || Boolean(profile?.bothHands),
+    );
+    if (layout) {
+      character.dataset.face = layout.face;
+      character.dataset.axis = layout.axis ?? "x";
+      character.dataset.push =
+        layout.axis === "y" || layout.mode === "push" ? layout.direction : "";
+    }
     if (profile) character.style.setProperty("--walk-ms", `${profile.walkMs}ms`);
   }
 
   function hideCharacter() {
     character.dataset.state = "hidden";
+    character.dataset.push = "";
     character.style.removeProperty("--lean");
   }
 
-  function mountWrap(placement, card) {
+  function mountWrap(layout, card) {
     const wrap = document.createElement("div");
     wrap.className = "delivery";
     wrap.dataset.effort = card.dataset.effort;
-    wrap.dataset.pipSide = placement.pipSide;
+    wrap.dataset.pipSide = layout.pipSide;
+    wrap.dataset.axis = layout.axis ?? "x";
+    wrap.dataset.dir = layout.direction ?? layout.from;
     wrap.style.visibility = "hidden";
-    if (placement.pipSide === "before") wrap.append(character, card);
+    if (layout.pipSide === "before") wrap.append(character, card);
     else wrap.append(card, character);
     lane.append(wrap);
     return wrap;
@@ -188,9 +199,10 @@ export function createScene({ character, lane, stage, docks }) {
       closable: false,
     });
 
-    const wrap = mountWrap(placement, card);
+    const layout = withMode(placement, "pull");
+    const wrap = mountWrap(layout, card);
     const spacer = insertSlot(dock, placement, Math.max(72, card.getBoundingClientRect().height));
-    const travel = measureTravel({ stage, wrap, card, slot: spacer, placement });
+    const travel = measureTravel({ stage, wrap, card, slot: spacer, placement: layout });
     const grab = offsetAlong(travel.start, travel.end, 80);
 
     if (reduced) {
@@ -199,10 +211,10 @@ export function createScene({ character, lane, stage, docks }) {
       return;
     }
 
-    setCharacterState("enter", profile.id, profile, placement);
+    setCharacterState("enter", profile.id, profile, layout);
     revealWrap(wrap, travel.start);
     await animatePos(wrap, travel.start, grab, profile.enterMs);
-    setCharacterState("grab", profile.id, profile, placement);
+    setCharacterState("grab", profile.id, profile, layout);
     await wait(profile.grabMs);
 
     await playPull({
@@ -210,19 +222,19 @@ export function createScene({ character, lane, stage, docks }) {
       from: grab,
       to: travel.end,
       profile,
-      placement,
-      stateWhenMoving: "pull",
+      placement: layout,
+      stateWhenMoving: layout.axis === "y" ? "push" : "pull",
     });
 
-    setCharacterState("release", profile.id, profile, placement);
+    setCharacterState("release", profile.id, profile, layout);
     await wait(profile.releaseMs);
 
     if (profile.exhaustedMs > 0) {
-      setCharacterState("exhausted", profile.id, profile, placement);
+      setCharacterState("exhausted", profile.id, profile, layout);
       await wait(profile.exhaustedMs);
     }
 
-    setCharacterState("exit", profile.id, profile, placement);
+    setCharacterState("exit", profile.id, profile, layout);
     await wait(profile.exitMs);
 
     settleToast(job, wrap, card, spacer, profile, placement);
@@ -297,9 +309,10 @@ export function createScene({ character, lane, stage, docks }) {
       effort: profile.id,
       closable: false,
     });
-    const wrap = mountWrap(placement, card);
+    const layout = withMode(placement, "push");
+    const wrap = mountWrap(layout, card);
 
-    const travel = measureTravel({ stage, wrap, card, slot: spacer, placement });
+    const travel = measureTravel({ stage, wrap, card, slot: spacer, placement: layout });
 
     if (reduced) {
       wrap.remove();
@@ -309,10 +322,10 @@ export function createScene({ character, lane, stage, docks }) {
       return;
     }
 
-    setCharacterState("enter", profile.id, profile, placement);
+    setCharacterState("enter", profile.id, profile, layout);
     revealWrap(wrap, travel.end);
     await wait(Math.max(280, profile.enterMs * 0.65));
-    setCharacterState("grab", profile.id, profile, placement);
+    setCharacterState("grab", profile.id, profile, layout);
     await wait(profile.grabMs);
 
     await playPull({
@@ -320,12 +333,12 @@ export function createScene({ character, lane, stage, docks }) {
       from: travel.end,
       to: travel.start,
       profile,
-      placement,
-      stateWhenMoving: "drag",
-      leanSign: -placement.leanSign,
+      placement: layout,
+      stateWhenMoving: "push",
+      leanSign: layout.leanSign,
     });
 
-    setCharacterState("exit", profile.id, profile, placement);
+    setCharacterState("exit", profile.id, profile, layout);
     await wait(profile.exitMs);
 
     wrap.remove();

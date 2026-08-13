@@ -1,6 +1,7 @@
 /**
- * Toaster placement. Pip's approach, facing, and pull axis
- * are derived from the dock position — keep that mapping here.
+ * Toaster placement. Pull (enter) and push (exit) layouts are derived
+ * from the dock. Left/right: Pip stands beside the card. Top/bottom:
+ * Pip gets under it (lift) or on top of it (press).
  */
 
 export const POSITIONS = [
@@ -19,17 +20,46 @@ export function parsePosition(value) {
 export function getPlacement(position) {
   const id = parsePosition(position);
   const [vertical, horizontal] = id.split("-");
-  const from = horizontal === "center" ? vertical : horizontal;
+  const edge = horizontal === "center" ? vertical : horizontal;
+  const verticalEnter = horizontal === "center";
 
   return {
     id,
     vertical,
     horizontal,
-    from,
-    pipSide: horizontal === "left" ? "after" : "before",
-    face: horizontal === "left" ? "-1" : "1",
-    leanSign: horizontal === "left" ? 1 : -1,
+    from: edge,
+    pull: verticalEnter
+      ? {
+          from: edge,
+          axis: "y",
+          pipSide: edge === "top" ? "before" : "after",
+          direction: edge === "top" ? "bottom" : "top",
+          face: "1",
+          leanSign: edge === "top" ? 1 : -1,
+        }
+      : {
+          from: edge,
+          axis: "x",
+          pipSide: horizontal === "left" ? "after" : "before",
+          direction: edge,
+          face: horizontal === "left" ? "-1" : "1",
+          leanSign: horizontal === "left" ? 1 : -1,
+        },
+    push: {
+      from: edge,
+      direction: edge,
+      axis: verticalEnter ? "y" : "x",
+      pipSide: edge === "left" || edge === "top" ? "after" : "before",
+      face: edge === "left" ? "-1" : "1",
+      leanSign: edge === "right" || edge === "bottom" ? 1 : -1,
+    },
   };
+}
+
+/** Merge pull or push fields onto the placement for a single acting layout. */
+export function withMode(placement, mode) {
+  const pose = mode === "push" ? placement.push : placement.pull;
+  return { ...placement, ...pose, mode };
 }
 
 export function insertSlot(dock, placement, height) {
