@@ -2,28 +2,30 @@ import { classifyEffort, createToaster } from "../dist/index.js";
 
 const PRESETS = {
   light: {
-    title: "Yeni mesaj",
-    message: "Toplantı 10 dk içinde.",
+    title: "New message",
+    message: "Meeting in 10 minutes.",
   },
   normal: {
-    title: "Tasarım incelemesi",
-    message: "Tasarım incelemesi 10 dakika içinde başlıyor. Odada hazır ol, notlarını yanına al.",
+    title: "Design review",
+    message: "Design review starts in 10 minutes. Be in the room and bring your notes.",
   },
   heavy: {
-    title: "Sprint özeti gecikti",
-    message: "Sprint review notları hâlâ eksik: API sözleşmesi, hata bütçesi ve bildirim kuyruğunun geri basma davranışı yazılmadı. Lütfen toplantıdan önce bu üç maddeyi tamamla, aksi halde demo kayar ve paydaşlara yeni bir slot açmak zorunda kalırız.",
+    title: "Sprint summary is late",
+    message:
+      "Sprint review notes are still missing: API contract, error budget, and back-pressure on the notification queue. Finish those three before the meeting or the demo slips and we have to book a new slot with stakeholders.",
   },
   massive: {
-    title: "Üretim alarmı — okumadan geçme",
-    message: "Kuyruk derinliği son 12 dakikada 4 katına çıktı. Worker’lar mesajı alıyor ama işledikten sonra ack atamıyor; retry fırtınası bildirim servisini şişiriyor. Kısa mesajlar hâlâ geçiyor, uzun gövdeli payload’lar ise worker’ı 2–3 saniye meşgul ediyor. Öncelik: tüketici timeout’unu düşür, poison mesajı ayrı kuyruğa al, ardından uzun bildirimleri parçala. Bu metin kasıtlı olarak uzun — Pip’in gerçekten ağır bir şeyi sürüklemesini izlemek için.",
+    title: "Production alarm — read this",
+    message:
+      "Queue depth quadrupled in the last 12 minutes. Workers take the message but never ack; the retry storm is inflating the notification service. Short payloads still get through; long bodies keep a worker busy for 2–3 seconds. Priority: drop consumer timeout, isolate poison messages, then split long notifications. This copy is long on purpose — so you can watch Pip drag something heavy.",
   },
 };
 
 const HINTS = {
-  light: "Pip bunu koşarak getirir.",
-  normal: "Pip rahatça sürükler.",
-  heavy: "Pip eğilecek. Birkaç hamlede çeker.",
-  massive: "Bu epey ağır. Pip zorlanacak.",
+  light: "Pip sprints this in.",
+  normal: "Pip carries it at a walk.",
+  heavy: "Pip will lean. A few slips.",
+  massive: "This is heavy. Pip will struggle.",
 };
 
 const titleInput = document.querySelector("#title-input");
@@ -35,14 +37,6 @@ const actionToggle = document.querySelector("#action-toggle");
 
 const toast = createToaster({
   position: "bottom-right",
-  labels: {
-    kicker: "Bildirim",
-    close: "Kapat",
-    info: "Bilgi",
-    success: "Başarılı",
-    warning: "Uyarı",
-    error: "Hata",
-  },
 });
 
 let position = "bottom-right";
@@ -105,12 +99,12 @@ function send() {
     duration: Number.isFinite(seconds) ? seconds * 1000 : 5000,
     action: actionToggle.checked
       ? [
-          { label: "Tamam" },
+          { label: "OK" },
           {
-            label: "Geri al",
+            label: "Undo",
             variant: "ghost",
             onClick: () => {
-              console.info("Geri al");
+              console.info("Undo");
             },
           },
         ]

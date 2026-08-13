@@ -107,7 +107,7 @@ function noopToaster(): Toaster {
 
 /**
  * Isolated toaster. Use this when a page needs two stacks, a custom
- * mount target, or Turkish/English copy on the card.
+ * mount target, or localized copy on the card.
  */
 export function createToaster(options: ToasterOptions = {}): Toaster {
   if (typeof document === "undefined") return noopToaster();

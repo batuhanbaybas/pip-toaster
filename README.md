@@ -73,10 +73,10 @@ const notify = createToaster({
   position: "bottom-left",
   duration: 5000,
   target: document.querySelector("#app"), // position: relative
-  labels: { kicker: "Bildirim", close: "Kapat" },
+  labels: { kicker: "Notice", close: "Dismiss" },
 });
 
-notify("Merhaba");
+notify("Hello");
 notify.destroy();
 ```
 
