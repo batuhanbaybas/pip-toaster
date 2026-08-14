@@ -49,12 +49,7 @@ export interface ToastPayload {
 }
 
 export interface ToasterLabels {
-  kicker?: string;
   close?: string;
-  info?: string;
-  success?: string;
-  warning?: string;
-  error?: string;
 }
 
 export interface ToasterOptions {

@@ -199,25 +199,6 @@
   background: color-mix(in srgb, #c44536 12%, var(--_toast-bg));
 }
 
-.note__kicker {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex: 0 0 auto;
-  margin-bottom: 4px;
-  padding-right: 20px;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--_toast-muted);
-  opacity: 0.72;
-}
-
-.note__weight {
-  color: var(--_accent);
-  font-weight: 600;
-}
-
 .note__title {
   flex: 0 0 auto;
   margin: 0 0 4px;
@@ -231,6 +212,7 @@
   flex: 1 1 auto;
   min-height: 0;
   margin: 0;
+  padding-right: 20px;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;

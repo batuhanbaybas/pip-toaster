@@ -64,7 +64,7 @@ Full payload, `createToaster`, labels, and card colors: [API docs](https://batuh
 
 ### Isolated instance
 
-Use `createToaster` when you need a second stack, a custom mount node, or different card copy.
+Use `createToaster` when you need a second stack, a custom mount node, or a localized close label.
 
 ```ts
 import { createToaster } from "pip-toaster";
@@ -73,7 +73,7 @@ const notify = createToaster({
   position: "bottom-left",
   duration: 5000,
   target: document.querySelector("#app"), // position: relative
-  labels: { kicker: "Notice", close: "Dismiss" },
+  labels: { close: "Dismiss" },
 });
 
 notify("Hello");

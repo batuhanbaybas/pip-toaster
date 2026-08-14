@@ -3,7 +3,6 @@ import type { ToastStatus } from "./status.js";
 import type { ToastAction, ToastActionContext, ToastContent } from "./types.js";
 
 type ResolvedLabels = {
-  kicker: string;
   close: string;
 };
 
@@ -18,13 +17,6 @@ export interface BuildCardOptions {
   actions?: ToastAction[];
   status?: ToastStatus;
   onDismiss: (id: string) => void;
-}
-
-function effortLabel(id: EffortId): string {
-  if (id === "light") return "light";
-  if (id === "heavy") return "heavy";
-  if (id === "massive") return "massive";
-  return "normal";
 }
 
 function flattenNodes(value: Node | string | Array<Node | string> | null | undefined): Node[] {
@@ -96,16 +88,6 @@ export function buildCard({
     id,
     dismiss: () => onDismiss(id),
   };
-
-  const kicker = document.createElement("div");
-  kicker.className = "note__kicker";
-  const kind = document.createElement("span");
-  kind.textContent = labels.kicker;
-  const weight = document.createElement("span");
-  weight.className = "note__weight";
-  weight.textContent = effortLabel(effort);
-  kicker.append(kind, weight);
-  article.append(kicker);
 
   if (title) {
     const heading = document.createElement("h2");

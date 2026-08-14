@@ -145,7 +145,7 @@ toast.<span class="fn">warning</span>({
         <p class="section__lead">
           One singleton for most apps. Reach for
           <code>createToaster</code> when you need a second stack, a custom
-          mount, or different card copy.
+          mount, or a localized close label.
         </p>
 
         <article class="api-card">
@@ -296,7 +296,7 @@ toast.<span class="fn">dismissAll</span>();</pre>
           <p class="sig">createToaster(options?: ToasterOptions): Toaster</p>
           <p>
             Isolated instance. Use it for a second stack, a custom mount node
-            (<code>position: relative</code>), or localized labels. If
+            (<code>position: relative</code>), or a localized close label. If
             <code>target</code> is omitted, the overlay is
             <code>position: fixed</code> on <code>document.body</code>.
           </p>
@@ -306,7 +306,7 @@ toast.<span class="fn">dismissAll</span>();</pre>
   position: <span class="str">"bottom-left"</span>,
   duration: 5000,
   target: document.querySelector(<span class="str">"#app"</span>),
-  labels: { kicker: <span class="str">"Notice"</span>, close: <span class="str">"Dismiss"</span> },
+  labels: { close: <span class="str">"Dismiss"</span> },
 });
 
 <span class="fn">notify</span>(<span class="str">"Hello"</span>);
@@ -342,11 +342,8 @@ notify.<span class="fn">destroy</span>();</pre>
               </tr>
               <tr>
                 <td>labels</td>
-                <td>Notice / Dismiss / …</td>
-                <td>
-                  Card kicker and close label. Status-specific kickers:
-                  Info, Success, Warning, Error.
-                </td>
+                <td>Dismiss</td>
+                <td>Close button <code>aria-label</code>. Not shown on the card.</td>
               </tr>
               <tr>
                 <td>card</td>
@@ -379,8 +376,7 @@ notify.<span class="fn">destroy</span>();</pre>
         <div>
           <h2>Status</h2>
           <p class="section__lead">
-            Shirt color and card accent track status. The kicker label follows
-            it too.
+            Shirt color and card accent track status.
           </p>
           <div class="statuses">
             <span class="pill"><i style="background:#3d7a78"></i> default</span>

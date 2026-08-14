@@ -20,30 +20,8 @@ import { parseStatus, type ToastStatus } from "./status.js";
 import type { ToastAction, ToastContent, ToasterLabels } from "./types.js";
 
 const DEFAULT_LABELS = {
-  kicker: "Notice",
   close: "Dismiss",
-  info: "Info",
-  success: "Success",
-  warning: "Warning",
-  error: "Error",
 } as const;
-
-type ResolvedLabels = {
-  kicker: string;
-  close: string;
-  info: string;
-  success: string;
-  warning: string;
-  error: string;
-};
-
-function statusKicker(status: ToastStatus, labels: ResolvedLabels): string {
-  if (status === "info") return labels.info;
-  if (status === "success") return labels.success;
-  if (status === "warning") return labels.warning;
-  if (status === "error") return labels.error;
-  return labels.kicker;
-}
 
 type CharacterState =
   | "hidden"
@@ -143,7 +121,7 @@ export function createScene({
   labels,
   ready,
 }: SceneOptions): Scene {
-  const copy: ResolvedLabels = { ...DEFAULT_LABELS, ...labels };
+  const copy = { ...DEFAULT_LABELS, ...labels };
   const jobs: Job[] = [];
   const toasts = new Map<string, ParkedToast>();
   let busy = false;
@@ -172,7 +150,7 @@ export function createScene({
       message: item.message,
       effort,
       closable,
-      labels: { kicker: statusKicker(item.status, copy), close: copy.close },
+      labels: { close: copy.close },
       content: item.content,
       actions: item.actions,
       status: item.status,
