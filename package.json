@@ -1,6 +1,6 @@
 {
   "name": "pip-toaster",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Toast notifications delivered by a character who pulls them in and pushes them out.",
   "license": "MIT",
   "author": "Batuhan Baybaş <b.baybas@gmail.com>",
