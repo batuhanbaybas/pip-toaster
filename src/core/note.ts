@@ -1,6 +1,6 @@
 import { resolveContent } from "./content.js";
-import type { EffortId } from "./effort.js";
-import type { ToastStatus } from "./status.js";
+import type { EffortId } from "../helper/effort.js";
+import type { ToastStatus } from "../helper/status.js";
 import type { ToastAction, ToastActionContext, ToastContent } from "./types.js";
 
 type ResolvedLabels = {

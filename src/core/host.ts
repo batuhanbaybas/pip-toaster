@@ -1,8 +1,8 @@
-import { applyCardColors, type CardColors } from "./card.js";
+import { applyCardColors, type CardColors } from "../helper/card.js";
 import { createCharacter } from "./character.js";
-import { POSITIONS, type ToastPosition } from "./placement.js";
+import { POSITIONS, type ToastPosition } from "../helper/placement.js";
 
-const stylesheetHref = new URL("./styles.css", import.meta.url).href;
+const stylesheetHref = new URL("../style/styles.css", import.meta.url).href;
 
 export type DockMap = Record<ToastPosition, HTMLElement>;
 

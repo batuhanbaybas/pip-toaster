@@ -3,8 +3,8 @@
  * Instance/singleton lifecycle stays in toaster.ts.
  */
 
-import type { ToastPosition } from "./placement.js";
-import { parseStatus, type ToastStatus } from "./status.js";
+import type { ToastPosition } from "../helper/placement.js";
+import { parseStatus, type ToastStatus } from "../helper/status.js";
 import type { ToastAction, ToastContent, ToastPayload } from "./types.js";
 
 export interface RuntimeConfig {

@@ -22,13 +22,13 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./styles.css": "./dist/styles.css"
+    "./styles.css": "./dist/style/styles.css"
   },
   "files": [
     "dist"
   ],
   "sideEffects": [
-    "./dist/styles.css"
+    "./dist/style/styles.css"
   ],
   "keywords": [
     "toast",
@@ -37,7 +37,7 @@
     "character"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc && cp src/styles.css dist/styles.css",
+    "build": "rm -rf dist && tsc && mkdir -p dist/style && cp src/style/styles.css dist/style/styles.css",
     "dev": "npm run build && python3 -m http.server 5173",
     "prepublishOnly": "npm run build"
   },

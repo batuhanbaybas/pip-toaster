@@ -1,15 +1,9 @@
-/**
- * Queue payloads shared by scene (who schedules) and the play modules
- * (who perform). Keep this file types-only so sequences can import it
- * without pulling animation code.
- */
-
 import type { Actor } from "./actor.js";
 import type { EffortId, EffortProfile } from "./effort.js";
 import type { DockMap } from "./host.js";
 import type { Placement, ToastPosition } from "./placement.js";
 import type { ToastStatus } from "./status.js";
-import type { ToastAction, ToastContent } from "./types.js";
+import type { ToastAction, ToastContent } from "./toast.js";
 
 export interface DeliverJob {
   kind: "deliver";
@@ -69,4 +63,10 @@ export interface PlayContext {
   queue: QueueState;
   paintCard: (item: CardModel, effort: EffortId, closable: boolean) => HTMLElement;
   requestDismiss: (id: string) => void;
+}
+
+export interface Playback {
+  playDelivery(job: DeliverJob): Promise<void>;
+  playDismiss(job: DismissJob, fromWait?: boolean): Promise<void>;
+  closeBook(): Promise<void>;
 }

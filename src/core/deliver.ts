@@ -2,11 +2,11 @@
  * Pull a toast onto the dock and park it. Dismiss is the inverse (dismiss.ts).
  */
 
-import { getProfile, type EffortProfile } from "./effort.js";
-import { measureTravel, offsetAlong } from "./geometry.js";
+import { getProfile, type EffortProfile } from "../helper/effort.js";
+import { measureTravel, offsetAlong } from "../helper/geometry.js";
 import { playPull } from "./haul.js";
 import type { DeliverJob, ParkedToast, PlayContext } from "./jobs.js";
-import { animatePos, prefersReducedMotion, wait } from "./motion.js";
+import { animatePos, prefersReducedMotion, wait } from "../helper/motion.js";
 import {
   getPlacement,
   insertSlot,
@@ -14,7 +14,7 @@ import {
   withMode,
   type ActingLayout,
   type Placement,
-} from "./placement.js";
+} from "../helper/placement.js";
 
 function settleToast(
   ctx: PlayContext,

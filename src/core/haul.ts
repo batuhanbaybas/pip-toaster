@@ -4,10 +4,10 @@
  */
 
 import type { Actor } from "./actor.js";
-import type { EffortProfile } from "./effort.js";
-import { lerpPoint, type Point } from "./geometry.js";
-import { animatePull, clamp, pullSlope, sampleCurve, setWrapPos } from "./motion.js";
-import type { ActingLayout } from "./placement.js";
+import type { EffortProfile } from "../helper/effort.js";
+import { lerpPoint, type Point } from "../helper/geometry.js";
+import { animatePull, clamp, pullSlope, sampleCurve, setWrapPos } from "../helper/motion.js";
+import type { ActingLayout } from "../helper/placement.js";
 import type { CharacterState } from "./pose.js";
 
 export interface PullMove {

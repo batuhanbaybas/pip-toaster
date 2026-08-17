@@ -1,9 +1,9 @@
 import { mountHost } from "./host.js";
 import { DEFAULTS, isEmpty, normalize, type RuntimeConfig } from "./payload.js";
-import { parsePosition } from "./placement.js";
+import { parsePosition } from "../helper/placement.js";
 import { createScene } from "./scene.js";
 import type { ToastPayload, Toaster, ToasterConfig, ToasterOptions } from "./types.js";
-import type { ToastStatus } from "./status.js";
+import type { ToastStatus } from "../helper/status.js";
 
 function statusMethods(
   show: (input: string | ToastPayload) => string,
