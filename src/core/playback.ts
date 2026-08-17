@@ -3,15 +3,9 @@
  * Sequence logic lives in those modules, not here.
  */
 
+import type { Playback, PlayContext } from "../types/jobs.js";
 import { playDelivery } from "./deliver.js";
 import { closeBook, playDismiss } from "./dismiss.js";
-import type { DeliverJob, DismissJob, PlayContext } from "./jobs.js";
-
-export interface Playback {
-  playDelivery(job: DeliverJob): Promise<void>;
-  playDismiss(job: DismissJob, fromWait?: boolean): Promise<void>;
-  closeBook(): Promise<void>;
-}
 
 export function createPlayback(ctx: PlayContext): Playback {
   return {

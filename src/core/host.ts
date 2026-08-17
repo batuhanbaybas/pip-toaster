@@ -1,29 +1,10 @@
-import { applyCardColors, type CardColors } from "../helper/card.js";
+import { applyCardColors } from "../helper/card.js";
+import { POSITIONS } from "../types/placement.js";
+import { DEFAULTS } from "../types/payload.js";
+import type { DockMap, MountHostOptions, ToastHost } from "../types/host.js";
 import { createCharacter } from "./character.js";
-import { POSITIONS, type ToastPosition } from "../helper/placement.js";
 
 const stylesheetHref = new URL("../style/styles.css", import.meta.url).href;
-
-export type DockMap = Record<ToastPosition, HTMLElement>;
-
-export interface MountHostOptions {
-  target?: HTMLElement | null;
-  zIndex?: number;
-  card?: CardColors;
-}
-
-export interface ToastHost {
-  host: HTMLElement;
-  root: HTMLElement;
-  stage: HTMLElement;
-  lane: HTMLElement;
-  character: HTMLElement;
-  docks: DockMap;
-  ready: Promise<void>;
-  setZIndex(value: number): void;
-  setCardColors(colors: CardColors): void;
-  destroy(): void;
-}
 
 function linkHasSheet(link: HTMLLinkElement): boolean {
   try {
@@ -46,7 +27,7 @@ export function mountHost({ target, zIndex, card }: MountHostOptions = {}): Toas
   host.style.cssText = [
     `position:${contained ? "absolute" : "fixed"}`,
     "inset:0",
-    `z-index:${zIndex ?? 2147483000}`,
+    `z-index:${zIndex ?? DEFAULTS.zIndex}`,
     "pointer-events:none",
     "overflow:clip",
     "overflow-anchor:none",

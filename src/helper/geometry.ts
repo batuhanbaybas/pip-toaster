@@ -2,12 +2,7 @@
  * Points and travel paths. Dock/position policy lives in placement.ts.
  */
 
-import type { Edge } from "./placement.js";
-
-export interface Point {
-  x: number;
-  y: number;
-}
+import type { MeasureTravelInput, Point, TravelPath } from "../types/geometry.js";
 
 export function offsetAlong(from: Point, to: Point, distance: number): Point {
   const dx = to.x - from.x;
@@ -36,13 +31,7 @@ export function measureTravel({
   card,
   slot,
   from,
-}: {
-  stage: HTMLElement;
-  wrap: HTMLElement;
-  card: HTMLElement;
-  slot: HTMLElement;
-  from: Edge;
-}): { start: Point; end: Point } {
+}: MeasureTravelInput): TravelPath {
   const stageRect = stage.getBoundingClientRect();
   const wrapRect = wrap.getBoundingClientRect();
   const cardRect = card.getBoundingClientRect();

@@ -3,31 +3,9 @@
  * Instance/singleton lifecycle stays in toaster.ts.
  */
 
-import type { ToastPosition } from "../helper/placement.js";
-import { parseStatus, type ToastStatus } from "../helper/status.js";
-import type { ToastAction, ToastContent, ToastPayload } from "./types.js";
-
-export interface RuntimeConfig {
-  position: ToastPosition;
-  duration: number;
-  zIndex: number;
-}
-
-export interface NormalizedToast {
-  title: string;
-  message: string;
-  content?: ToastContent;
-  actions: ToastAction[];
-  status: ToastStatus;
-  position: ToastPosition;
-  durationMs: number;
-}
-
-export const DEFAULTS: RuntimeConfig = {
-  position: "bottom-right",
-  duration: 5000,
-  zIndex: 2147483000,
-};
+import { parseStatus } from "../helper/status.js";
+import type { NormalizedToast, RuntimeConfig } from "../types/payload.js";
+import type { ToastAction, ToastPayload } from "../types/toast.js";
 
 function asActions(action: ToastPayload["action"]): ToastAction[] {
   if (!action) return [];

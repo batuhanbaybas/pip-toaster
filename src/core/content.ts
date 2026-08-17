@@ -3,7 +3,7 @@
  * stays in note.ts.
  */
 
-import type { ToastActionContext, ToastContent } from "./types.js";
+import type { ToastActionContext, ToastContent } from "../types/toast.js";
 
 function flattenNodes(value: Node | string | Array<Node | string> | null | undefined): Node[] {
   if (value == null || value === "") return [];

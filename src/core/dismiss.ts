@@ -2,12 +2,12 @@
  * Push a parked toast off stage, and drop a “reading” pose before the next job.
  */
 
-import type { EffortId } from "../helper/effort.js";
 import { measureTravel } from "../helper/geometry.js";
-import { playPull } from "./haul.js";
-import type { DismissJob, PlayContext } from "./jobs.js";
 import { prefersReducedMotion, wait } from "../helper/motion.js";
 import { withMode } from "../helper/placement.js";
+import type { EffortId } from "../types/effort.js";
+import type { DismissJob, PlayContext } from "../types/jobs.js";
+import { playPull } from "./haul.js";
 
 export async function playDismiss(
   ctx: PlayContext,

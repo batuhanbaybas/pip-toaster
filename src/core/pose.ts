@@ -2,22 +2,10 @@
  * Dataset/CSS pose for one or more Pips. Wrap mount/park stays in actor.ts.
  */
 
-import type { EffortId, EffortProfile } from "../helper/effort.js";
-import type { ActingLayout } from "../helper/placement.js";
-import type { ToastStatus } from "../helper/status.js";
-
-export type CharacterState =
-  | "hidden"
-  | "enter"
-  | "grab"
-  | "pull"
-  | "push"
-  | "strain"
-  | "slip"
-  | "release"
-  | "exhausted"
-  | "exit"
-  | "read";
+import type { CharacterState } from "../types/actor.js";
+import type { EffortId, EffortProfile } from "../types/effort.js";
+import type { ActingLayout } from "../types/placement.js";
+import type { ToastStatus } from "../types/status.js";
 
 export function applyPose(
   crew: HTMLElement[],

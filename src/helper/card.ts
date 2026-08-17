@@ -1,14 +1,4 @@
-export interface CardColors {
-  background?: string;
-  color?: string;
-  accent?: string;
-}
-
-const CARD_VARS = {
-  background: "--toast-bg",
-  color: "--toast-color",
-  accent: "--toast-accent",
-} as const satisfies Record<keyof CardColors, `--toast-${string}`>;
+import { CARD_VARS, type CardColors } from "../types/card.js";
 
 export function applyCardColors(host: HTMLElement, colors: CardColors): void {
   for (const key of Object.keys(CARD_VARS) as (keyof CardColors)[]) {

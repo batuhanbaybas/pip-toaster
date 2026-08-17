@@ -3,8 +3,10 @@
  * (lean / strain / slip); this module only knows time, easing, and points.
  */
 
-import type { CurveEase, EffortProfile } from "./effort.js";
-import { lerpPoint, type Point } from "./geometry.js";
+import type { CurveEase, EffortProfile } from "../types/effort.js";
+import type { Point } from "../types/geometry.js";
+import type { AnimatePullOptions } from "../types/motion.js";
+import { lerpPoint } from "./geometry.js";
 
 export function wait(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -73,13 +75,7 @@ export function pullSlope(profile: EffortProfile, t: number): number {
   return (b - a) / (2 * dt);
 }
 
-export function animatePull({
-  duration,
-  onFrame,
-}: {
-  duration: number;
-  onFrame: (t: number) => void;
-}): Promise<void> {
+export function animatePull({ duration, onFrame }: AnimatePullOptions): Promise<void> {
   return new Promise((resolve) => {
     const start = performance.now();
     const tick = (now: number) => {

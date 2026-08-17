@@ -1,24 +1,6 @@
 import { resolveContent } from "./content.js";
-import type { EffortId } from "../helper/effort.js";
-import type { ToastStatus } from "../helper/status.js";
-import type { ToastAction, ToastActionContext, ToastContent } from "./types.js";
-
-type ResolvedLabels = {
-  close: string;
-};
-
-export interface BuildCardOptions {
-  id: string;
-  title: string;
-  message: string;
-  effort: EffortId;
-  closable: boolean;
-  labels: ResolvedLabels;
-  content?: ToastContent;
-  actions?: ToastAction[];
-  status?: ToastStatus;
-  onDismiss: (id: string) => void;
-}
+import type { BuildCardOptions } from "../types/note.js";
+import type { ToastAction, ToastActionContext } from "../types/toast.js";
 
 function renderActions(
   actions: ToastAction[],

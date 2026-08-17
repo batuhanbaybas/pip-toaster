@@ -3,33 +3,14 @@
  * Dataset pose lives in pose.ts; carry animation in haul.ts.
  */
 
-import type { EffortId, EffortProfile } from "../helper/effort.js";
-import type { Point } from "../helper/geometry.js";
 import { setWrapPos } from "../helper/motion.js";
-import { crewSize, type ActingLayout } from "../helper/placement.js";
-import { applyPose, type CharacterState } from "./pose.js";
-import type { ToastStatus } from "../helper/status.js";
-
-export type { CharacterState };
-
-export interface Actor {
-  crewOf(wrap: HTMLElement | null): HTMLElement[];
-  setActingStatus(status: ToastStatus): void;
-  setCharacterState(
-    state: CharacterState,
-    effort: EffortId,
-    profile?: EffortProfile,
-    layout?: ActingLayout,
-  ): void;
-  hideCharacter(): void;
-  clearMates(): void;
-  mountWrap(layout: ActingLayout, card: HTMLElement, profile: EffortProfile): HTMLElement;
-  revealWrap(wrap: HTMLElement, point: Point): void;
-  /** Wrap is gone; Pip stays on stage (e.g. reading in a parked slot). */
-  releaseWrap(): void;
-  parkCharacter(): void;
-  detachFromSlot(): void;
-}
+import { crewSize } from "../helper/placement.js";
+import type { Actor, CharacterState } from "../types/actor.js";
+import type { EffortId, EffortProfile } from "../types/effort.js";
+import type { Point } from "../types/geometry.js";
+import type { ActingLayout } from "../types/placement.js";
+import type { ToastStatus } from "../types/status.js";
+import { applyPose } from "./pose.js";
 
 export function createActor(character: HTMLElement, lane: HTMLElement): Actor {
   let activeWrap: HTMLElement | null = null;

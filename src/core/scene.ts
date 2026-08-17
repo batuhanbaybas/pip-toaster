@@ -3,45 +3,16 @@
  * pull-in / push-out live in deliver.ts and dismiss.ts.
  */
 
-import { createActor } from "./actor.js";
-import type { EffortId } from "../helper/effort.js";
-import type { DockMap } from "./host.js";
-import type { CardModel, Job, QueueState } from "./jobs.js";
 import { wait } from "../helper/motion.js";
+import { parsePosition } from "../helper/placement.js";
+import { parseStatus } from "../helper/status.js";
+import type { EffortId } from "../types/effort.js";
+import type { CardModel, Job, QueueState } from "../types/jobs.js";
+import type { Scene, SceneOptions } from "../types/scene.js";
+import { DEFAULT_LABELS } from "../types/toast.js";
+import { createActor } from "./actor.js";
 import { buildCard } from "./note.js";
-import { parsePosition, type ToastPosition } from "../helper/placement.js";
 import { createPlayback } from "./playback.js";
-import { parseStatus, type ToastStatus } from "../helper/status.js";
-import type { ToastAction, ToastContent, ToasterLabels } from "./types.js";
-
-const DEFAULT_LABELS = {
-  close: "Dismiss",
-} as const;
-
-export interface SceneOptions {
-  character: HTMLElement;
-  lane: HTMLElement;
-  stage: HTMLElement;
-  docks: DockMap;
-  labels?: ToasterLabels;
-  ready?: Promise<void>;
-}
-
-export interface EnqueueInput {
-  title: string;
-  message: string;
-  content?: ToastContent;
-  actions: ToastAction[];
-  status: ToastStatus;
-  position: ToastPosition;
-  durationMs: number;
-}
-
-export interface Scene {
-  enqueue(input: EnqueueInput): string;
-  dismiss(id: string): void;
-  dismissAll(): void;
-}
 
 export function createScene({
   character,

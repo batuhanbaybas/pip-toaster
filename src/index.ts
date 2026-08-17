@@ -1,7 +1,6 @@
 export { toast, createToaster } from "./core/toaster.js";
-export { POSITIONS } from "./helper/placement.js";
-export { STATUSES } from "./helper/status.js";
-export { EFFORT, classifyEffort, contentLength } from "./helper/effort.js";
+export { classifyEffort, contentLength } from "./helper/effort.js";
+export { EFFORT, POSITIONS, STATUSES } from "./types/index.js";
 export type {
   CardColors,
   EffortId,
@@ -15,4 +14,4 @@ export type {
   ToasterConfig,
   ToasterLabels,
   ToasterOptions,
-} from "./core/types.js";
+} from "./types/index.js";

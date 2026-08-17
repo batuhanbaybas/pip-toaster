@@ -3,22 +3,10 @@
  * Used by both pull-in (deliver) and push-out (dismiss).
  */
 
-import type { Actor } from "./actor.js";
-import type { EffortProfile } from "../helper/effort.js";
-import { lerpPoint, type Point } from "../helper/geometry.js";
+import { lerpPoint } from "../helper/geometry.js";
 import { animatePull, clamp, pullSlope, sampleCurve, setWrapPos } from "../helper/motion.js";
-import type { ActingLayout } from "../helper/placement.js";
-import type { CharacterState } from "./pose.js";
-
-export interface PullMove {
-  wrap: HTMLElement;
-  from: Point;
-  to: Point;
-  profile: EffortProfile;
-  placement: ActingLayout;
-  stateWhenMoving: CharacterState;
-  leanSign?: number;
-}
+import type { Actor } from "../types/actor.js";
+import type { PullMove } from "../types/motion.js";
 
 export async function playPull(actor: Actor, move: PullMove): Promise<void> {
   const sign = move.leanSign ?? move.placement.leanSign;
