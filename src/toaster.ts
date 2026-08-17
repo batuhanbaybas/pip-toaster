@@ -1,78 +1,9 @@
 import { mountHost } from "./host.js";
-import { parsePosition, type ToastPosition } from "./placement.js";
+import { DEFAULTS, isEmpty, normalize, type RuntimeConfig } from "./payload.js";
+import { parsePosition } from "./placement.js";
 import { createScene } from "./scene.js";
-import { parseStatus, type ToastStatus } from "./status.js";
-import type {
-  ToastAction,
-  ToastContent,
-  ToastPayload,
-  Toaster,
-  ToasterConfig,
-  ToasterOptions,
-} from "./types.js";
-
-interface RuntimeConfig {
-  position: ToastPosition;
-  duration: number;
-  zIndex: number;
-}
-
-interface NormalizedToast {
-  title: string;
-  message: string;
-  content?: ToastContent;
-  actions: ToastAction[];
-  status: ToastStatus;
-  position: ToastPosition;
-  durationMs: number;
-}
-
-const DEFAULTS: RuntimeConfig = {
-  position: "bottom-right",
-  duration: 5000,
-  zIndex: 2147483000,
-};
-
-function asActions(action: ToastPayload["action"]): ToastAction[] {
-  if (!action) return [];
-  return Array.isArray(action) ? action : [action];
-}
-
-function normalize(input: string | ToastPayload, defaults: RuntimeConfig): NormalizedToast {
-  if (typeof input === "string") {
-    return {
-      title: "",
-      message: input,
-      actions: [],
-      status: "default",
-      position: defaults.position,
-      durationMs: defaults.duration,
-    };
-  }
-
-  const title = String(input.title ?? "");
-  const message = String(input.message ?? input.body ?? input.description ?? "");
-  const actions = asActions(input.action);
-
-  return {
-    title,
-    message,
-    content: input.content,
-    actions,
-    status: parseStatus(input.status),
-    position: input.position ?? defaults.position,
-    durationMs: input.duration ?? defaults.duration,
-  };
-}
-
-function isEmpty(payload: NormalizedToast): boolean {
-  return (
-    !payload.title.trim() &&
-    !payload.message.trim() &&
-    payload.content == null &&
-    payload.actions.length === 0
-  );
-}
+import type { ToastPayload, Toaster, ToasterConfig, ToasterOptions } from "./types.js";
+import type { ToastStatus } from "./status.js";
 
 function statusMethods(
   show: (input: string | ToastPayload) => string,

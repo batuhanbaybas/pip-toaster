@@ -1,3 +1,4 @@
+import { resolveContent } from "./content.js";
 import type { EffortId } from "./effort.js";
 import type { ToastStatus } from "./status.js";
 import type { ToastAction, ToastActionContext, ToastContent } from "./types.js";
@@ -17,22 +18,6 @@ export interface BuildCardOptions {
   actions?: ToastAction[];
   status?: ToastStatus;
   onDismiss: (id: string) => void;
-}
-
-function flattenNodes(value: Node | string | Array<Node | string> | null | undefined): Node[] {
-  if (value == null || value === "") return [];
-  if (typeof value === "string") return [document.createTextNode(value)];
-  if (Array.isArray(value)) return value.flatMap((item) => flattenNodes(item));
-  if (value instanceof DocumentFragment) return [...value.childNodes];
-  return [value];
-}
-
-function resolveContent(content: ToastContent | undefined, ctx: ToastActionContext, clone: boolean): Node[] {
-  if (content == null) return [];
-  const resolved = typeof content === "function" ? content(ctx) : content;
-  const nodes = flattenNodes(resolved);
-  if (!clone) return nodes;
-  return nodes.map((node) => node.cloneNode(true));
 }
 
 function renderActions(

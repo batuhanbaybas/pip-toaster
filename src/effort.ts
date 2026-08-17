@@ -1,7 +1,7 @@
 /**
  * Notification "weight" is derived from content length.
  * Character behavior is a view of this weight — keep the mapping here,
- * not in animation code.
+ * not in animation code. Curve sampling lives in motion.ts.
  */
 
 export const EFFORT = {
@@ -151,32 +151,4 @@ export function getProfileById(id: EffortId): EffortProfile {
   const profile = PROFILES[id];
   if (!profile) throw new Error(`Unknown effort: ${id}`);
   return profile;
-}
-
-function easeOutCubic(t: number): number {
-  return 1 - (1 - t) ** 3;
-}
-
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
-}
-
-function applyEase(t: number, kind: CurveEase): number {
-  if (kind === "easeOut") return easeOutCubic(t);
-  if (kind === "easeInOut") return easeInOutCubic(t);
-  return t;
-}
-
-export function sampleCurve(profile: EffortProfile, t: number): number {
-  const clamped = Math.min(1, Math.max(0, t));
-  const { curve, ease } = profile;
-  let i = 0;
-  while (i < curve.length - 2 && clamped > (curve[i + 1]?.t ?? 1)) i += 1;
-
-  const a = curve[i];
-  const b = curve[i + 1];
-  if (!a || !b) return 0;
-  const span = b.t - a.t || 1;
-  const local = applyEase((clamped - a.t) / span, ease);
-  return a.v + (b.v - a.v) * local;
 }
