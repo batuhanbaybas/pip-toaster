@@ -16,6 +16,7 @@
   top: 0;
   z-index: 20;
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
