@@ -25,10 +25,16 @@ body {
   font-family: Outfit, system-ui, sans-serif;
 }
 
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+}
+
 .app {
   display: grid;
   grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
-  height: calc(100% - var(--nav-h, 56px));
+  flex: 1;
   min-height: 0;
   overflow: hidden;
 }
@@ -264,14 +270,34 @@ body {
 @media (max-width: 860px) {
   .app {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, auto) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(120px, 16svh);
   }
 
   .composer {
-    max-height: 46vh;
+    max-height: none;
     border-right: 0;
     border-bottom: 1px solid var(--line);
-    padding: 24px 20px;
+    padding: 16px 16px 12px;
+  }
+
+  .composer__title {
+    font-size: 1.45rem;
+  }
+
+  .composer__lead {
+    margin-bottom: 14px;
+  }
+
+  .field {
+    margin-bottom: 12px;
+  }
+
+  .field textarea {
+    height: 4.75rem;
+  }
+
+  .placement {
+    grid-template-rows: repeat(2, 28px);
   }
 
   .stage {
