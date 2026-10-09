@@ -115,14 +115,49 @@ Then open http://localhost:5173 for the docs site and http://localhost:5173/play
 
 `npm run build` compiles `src/` → `dist/` (the demo imports from there).
 
-## GitHub Pages
+## Contributing
 
-The site deploys from `.github/workflows/pages.yml` on push to `master`.
+Contributions are welcome! Whether it's fixing a bug, improving the documentation, suggesting a feature, or refining Pip's animations, every contribution is appreciated.
 
-One-time: **Settings → Pages → Source → GitHub Actions**. After the workflow runs, the site is at `https://batuhanbaybas.github.io/pip-toaster/`.
+### Getting started
 
-## Publish
+1. Fork the repository.
+2. Clone your fork and install dependencies:
 
-```bash
-npm publish --access public
-```
+   ```bash
+   git clone https://github.com/batuhanbaybas/pip-toaster.git
+   cd pip-toaster
+   npm install
+   ```
+
+3. Start the development server to explore the docs and playground:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Create a branch for your changes:
+
+   ```bash
+   git checkout -b feat/your-feature
+   ```
+
+5. Make your changes and verify the build:
+
+   ```bash
+   npm run build
+   ```
+
+6. Commit your changes and open a pull request.
+
+### Guidelines
+
+- Keep the library lightweight and framework-agnostic.
+- Preserve Shadow DOM isolation and avoid leaking styles into the host application.
+- Test animation behavior across different toast positions and content lengths.
+- Update the documentation when changing the public API.
+- Keep changes focused and backward-compatible whenever possible.
+
+Found a bug or have an idea? Feel free to open an issue to discuss it.
+
+Thanks for helping make Pip better! 🐣
